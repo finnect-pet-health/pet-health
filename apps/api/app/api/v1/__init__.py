@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 
-from app.api.v1 import auth, budget, donations, families, health, hospitals, me, pets
+from app.api.v1 import (
+    auth,
+    budget,
+    donations,
+    families,
+    health,
+    hospitals,
+    me,
+    pets,
+    uploads,
+)
 
 router = APIRouter()
 router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -12,3 +22,4 @@ router.include_router(health.router, tags=["health"])
 router.include_router(hospitals.router, prefix="/hospitals", tags=["hospitals"])
 router.include_router(budget.router, tags=["budget"])
 router.include_router(donations.router, prefix="/donations", tags=["donations"])
+router.include_router(uploads.router, prefix="/uploads", tags=["uploads"])
