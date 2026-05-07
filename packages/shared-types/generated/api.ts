@@ -179,6 +179,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/pets/{pet_id}/diagnoses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Diagnoses */
+        get: operations["list_diagnoses_v1_pets__pet_id__diagnoses_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/pets/{pet_id}/health/snapshots": {
         parameters: {
             query?: never;
@@ -216,24 +233,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/pets/{pet_id}/diagnoses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Diagnoses */
-        get: operations["list_diagnoses_v1_pets__pet_id__diagnoses_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/hospitals": {
+    "/v1/hospitals/nearby": {
         parameters: {
             query?: never;
             header?: never;
@@ -241,10 +241,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Search Hospitals
-         * @description 위치 기반 동물병원 검색 (PostGIS ST_DWithin).
+         * Hospitals Nearby
+         * @description 현재 위치 (lat, lng) 기준 PostGIS `ST_DWithin` + 거리 ASC 정렬.
+         *
+         *     `specialty` 는 W3-v2 에서 무시 (W4-v2 triage 에서 활용 예정).
+         *     좌표 결측 row (location IS NULL) 는 ST_DWithin 자연 제외.
          */
-        get: operations["search_hospitals_v1_hospitals_get"];
+        get: operations["hospitals_nearby_v1_hospitals_nearby_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -344,6 +347,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/uploads/presign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Presign Upload */
+        post: operations["presign_upload_v1_uploads_presign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/diagnose/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Diagnose Image Route */
+        post: operations["diagnose_image_route_v1_diagnose_image_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/diagnose/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Diagnose Audio Route */
+        post: operations["diagnose_audio_route_v1_diagnose_audio_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -372,6 +426,50 @@ export interface components {
             member: {
                 [key: string]: unknown;
             };
+        };
+        /** DiagnoseAudioIn */
+        DiagnoseAudioIn: {
+            /** Pet Id */
+            pet_id: string;
+            /** Audio S3 Key */
+            audio_s3_key: string;
+        };
+        /** DiagnoseImageIn */
+        DiagnoseImageIn: {
+            /** Pet Id */
+            pet_id: string;
+            /** Image S3 Key */
+            image_s3_key: string;
+            /**
+             * Region
+             * @default skin
+             * @enum {string}
+             */
+            region: "skin" | "eye" | "ear" | "gum";
+        };
+        /** DiagnosisOut */
+        DiagnosisOut: {
+            /** Id */
+            id: string;
+            /** Pet Id */
+            pet_id: string;
+            /** Modality */
+            modality: string;
+            /** S3 Ref */
+            s3_ref: string;
+            /** Top Results */
+            top_results: {
+                [key: string]: unknown;
+            }[];
+            /** Action */
+            action: string;
+            /** Confidence Top1 */
+            confidence_top1: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** FamilyCreateIn */
         FamilyCreateIn: {
@@ -411,6 +509,25 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HospitalNearby */
+        HospitalNearby: {
+            /** Id */
+            id: string;
+            /** Mgmt No */
+            mgmt_no: string;
+            /** Name */
+            name: string;
+            /** Road Addr */
+            road_addr: string;
+            /** Tel */
+            tel: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /** Distance M */
+            distance_m: number;
         };
         /** InviteIn */
         InviteIn: {
@@ -512,6 +629,25 @@ export interface components {
             neutered: boolean;
             /** Conditions */
             conditions: string[];
+        };
+        /** PresignRequest */
+        PresignRequest: {
+            /**
+             * Modality
+             * @enum {string}
+             */
+            modality: "image" | "audio";
+            /** Content Type */
+            content_type: string;
+        };
+        /** PresignResponse */
+        PresignResponse: {
+            /** Key */
+            key: string;
+            /** Url */
+            url: string;
+            /** Ttl S */
+            ttl_s: number;
         };
         /** RefreshIn */
         RefreshIn: {
@@ -958,6 +1094,39 @@ export interface operations {
             };
         };
     };
+    list_diagnoses_v1_pets__pet_id__diagnoses_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                pet_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_snapshots_v1_pets__pet_id__health_snapshots_get: {
         parameters: {
             query?: never;
@@ -1022,45 +1191,15 @@ export interface operations {
             };
         };
     };
-    list_diagnoses_v1_pets__pet_id__diagnoses_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    search_hospitals_v1_hospitals_get: {
+    hospitals_nearby_v1_hospitals_nearby_get: {
         parameters: {
             query: {
                 lat: number;
                 lng: number;
                 radius_m?: number;
+                limit?: number;
+                /** @description W4-v2 triage 에서 사용, W3-v2 무시 */
+                specialty?: string | null;
             };
             header?: never;
             path?: never;
@@ -1074,7 +1213,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HospitalNearby"][];
                 };
             };
             /** @description Validation Error */
@@ -1208,6 +1347,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    presign_upload_v1_uploads_presign_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diagnose_image_route_v1_diagnose_image_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnoseImageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diagnose_audio_route_v1_diagnose_audio_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnoseAudioIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisOut"];
                 };
             };
             /** @description Validation Error */
