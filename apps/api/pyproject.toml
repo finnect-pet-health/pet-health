@@ -50,6 +50,17 @@ target-version = "py312"
 select = ["E", "F", "I", "B", "UP", "N", "S", "C4"]
 ignore = ["S101"]
 
+[tool.ruff.lint.per-file-ignores]
+# 시드 데이터 파일 — 가독성을 위해 row 단위 1줄 유지 (line-length 면제).
+"app/seeds/*.py" = ["E501"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+
+[[tool.mypy.overrides]]
+module = ["jose.*", "authlib.*", "geoalchemy2.*"]
+ignore_missing_imports = true

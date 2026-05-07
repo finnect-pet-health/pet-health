@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import statistics
 
-from app.schemas import DiseaseCandidate, DiseaseInferIn, DiseaseInferOut
+from app.schemas import ActionEnum, DiseaseCandidate, DiseaseInferIn, DiseaseInferOut
 
 
 def _rolling_anomaly(snapshots) -> tuple[float, dict[str, float]]:
@@ -45,6 +45,7 @@ def infer_disease(payload: DiseaseInferIn) -> DiseaseInferOut:
             DiseaseCandidate(label="감염성 발열", prob=0.06, confidence_band=(0.02, 0.12)),
         ]
 
+    action: ActionEnum
     if anomaly_score >= 0.7 or any(c.prob >= 0.4 for c in top):
         action = "immediate"
     elif anomaly_score >= 0.4:
