@@ -35,7 +35,10 @@ dist-mobile/
 *.sqlite3
 data/
 !docs/data/
-models/
+# ML model weights (NOT app/models/ ORM directories)
+/models/
+apps/*/models/
+!apps/*/app/models/
 checkpoints/
 wandb/
 runs/
