@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / RN / Expo
+node_modules/
+.expo/
+.expo-shared/
+dist-mobile/
+*.log
+.next/
+.turbo/
+.pnpm-debug.log*
+
+# Env / Secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+
+# DB / Cache / ML artifacts
+*.sqlite
+*.sqlite3
+data/
+!docs/data/
+models/
+checkpoints/
+wandb/
+runs/
+.coverage
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker volumes (local dev)
+.docker-data/
