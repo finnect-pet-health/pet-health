@@ -1,7 +1,0 @@
-{
-  "tool_name": "WebFetch",
-  "tool_input_preview": "{\"url\":\"https://raw.githubusercontent.com/dahlian00/AnimalCLAP/main/model/clap.py\",\"prompt\":\"Extract the complete HFCLAPContrastive class definition: __init__ parameters, encode_audio method, audio_he...",
-  "error": "Request failed with status code 404",
-  "timestamp": "2026-05-07T07:15:45.897Z",
-  "retry_count": 2
-}

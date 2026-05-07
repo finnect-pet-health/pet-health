@@ -52,3 +52,9 @@ Thumbs.db
 
 # Docker volumes (local dev)
 .docker-data/
+
+# OMC runtime state (mission/agent transient — plans/research are kept)
+**/.omc/state/
+**/.omc/sessions/
+.omc/project-memory.json
+.omc/notepad.md

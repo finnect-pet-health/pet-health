@@ -1,7 +1,0 @@
-{
-  "tool_name": "WebFetch",
-  "tool_input_preview": "{\"url\":\"https://infuser.odcloud.kr/oas/docs?namespace=1741000/v1\",\"prompt\":\"행정안전부(1741000) 동물병원 OpenAPI 명세. operation 이름, endpoint URL, 파라미터, 응답 스키마 추출. 만약 namespace 안 맞으면 그렇다고 알려주고 정확한 namespace 추정.\"...",
-  "error": "Request failed with status code 404",
-  "timestamp": "2026-05-07T08:43:59.315Z",
-  "retry_count": 1
-}
