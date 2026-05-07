@@ -25,6 +25,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7",
     "geoalchemy2>=0.15",
     "shapely>=2.0",
+    "pyproj>=3.6",
     "structlog>=24.4",
     "sentry-sdk[fastapi]>=2.18",
     "authlib>=1.3",

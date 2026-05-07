@@ -43,6 +43,7 @@ def _alembic_upgrade():
     async def _bootstrap() -> None:
         engine = create_async_engine(TEST_DSN, future=True)
         async with engine.begin() as conn:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
             await conn.run_sync(Base.metadata.drop_all)
             for enum_name in ("member_role", "pet_species"):
                 await conn.execute(text(f"DROP TYPE IF EXISTS {enum_name} CASCADE"))
