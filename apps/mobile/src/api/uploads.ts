@@ -1,8 +1,7 @@
 // W3-v2: presigned upload helpers.
 // `presignUpload` 은 백엔드에 키를 발급받음. `uploadToPresignedUrl` 은 받은 URL 로
 // PUT 하여 객체를 적재. 실 운영(S3)에서는 presign URL 이 직접 S3 로 가지만,
-// dev/mock 환경에서는 `mock-s3://` 스킴 URL 이 반환됨 → 실 PUT 은 LocalStack
-// 도입(W3-v2 D2) 또는 별도 dev raw upload 라우트 도입 시점에 마무리.
+// dev/mock 환경(`mock-s3://` 스킴)에서는 backend `/v1/uploads/raw` 라우트로 forward.
 
 import { api } from './client';
 import type { PresignBody, PresignResponse } from './types';
@@ -12,23 +11,31 @@ export async function presignUpload(body: PresignBody): Promise<PresignResponse>
   return res.data;
 }
 
+const MOCK_URL_PATTERN = /^mock-s3:\/\/[^/]+\/([^?]+)/;
+
 /**
  * presigned URL 로 파일 PUT.
+ *
+ * - 실 S3 URL → 직접 PUT (Authorization 헤더 없음)
+ * - `mock-s3://` URL → key 추출 후 backend `/v1/uploads/raw?key=...` 로 POST
+ *   (api 인스턴스 통해 인증 헤더 자동 부착)
  *
  * @param url presignUpload 응답의 url
  * @param body PUT body (Blob, Uint8Array, ArrayBuffer 등 fetch 가 받는 형식)
  * @param contentType presign 요청 시 사용한 content_type 과 동일해야 함
- *
- * mock-s3:// 스킴은 LocalStack 도입 전까지 no-op (개발용 placeholder).
  */
 export async function uploadToPresignedUrl(
   url: string,
   body: BodyInit,
   contentType: string,
 ): Promise<void> {
-  if (url.startsWith('mock-s3://')) {
-    // TODO(W3-v2 D2): LocalStack 또는 backend `/uploads/raw` 라우트로 라우팅.
-    // 현재는 in-memory mock storage 라 PUT 결과를 받을 수 없음.
+  const mockMatch = url.match(MOCK_URL_PATTERN);
+  if (mockMatch) {
+    const key = decodeURIComponent(mockMatch[1]);
+    await api.post('/uploads/raw', body, {
+      params: { key },
+      headers: { 'Content-Type': contentType },
+    });
     return;
   }
   const res = await fetch(url, {

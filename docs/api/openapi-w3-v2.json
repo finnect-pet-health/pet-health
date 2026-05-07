@@ -1126,6 +1126,76 @@
         }
       }
     },
+    "/v1/uploads/raw": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Raw Upload",
+        "description": "Dev-only mock storage 직업로드 — `mock-s3://` URL 으로부터의 forward 대상.\n\n실 운영(`app_env=='production'`)에서는 404 — presigned URL 흐름만 사용.\ncontent-type 화이트리스트 적용 (image/audio 양쪽 통합).",
+        "operationId": "raw_upload_v1_uploads_raw_post",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "title": "Key"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Content-Type"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawUploadOk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/diagnose/image": {
       "post": {
         "tags": [
@@ -1871,6 +1941,24 @@
           "ttl_s"
         ],
         "title": "PresignResponse"
+      },
+      "RawUploadOk": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "bytes": {
+            "type": "integer",
+            "title": "Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "bytes"
+        ],
+        "title": "RawUploadOk"
       },
       "RefreshIn": {
         "properties": {

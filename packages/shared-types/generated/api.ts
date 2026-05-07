@@ -364,6 +364,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/uploads/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Raw Upload
+         * @description Dev-only mock storage 직업로드 — `mock-s3://` URL 으로부터의 forward 대상.
+         *
+         *     실 운영(`app_env=='production'`)에서는 404 — presigned URL 흐름만 사용.
+         *     content-type 화이트리스트 적용 (image/audio 양쪽 통합).
+         */
+        post: operations["raw_upload_v1_uploads_raw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/diagnose/image": {
         parameters: {
             query?: never;
@@ -648,6 +671,13 @@ export interface components {
             url: string;
             /** Ttl S */
             ttl_s: number;
+        };
+        /** RawUploadOk */
+        RawUploadOk: {
+            /** Key */
+            key: string;
+            /** Bytes */
+            bytes: number;
         };
         /** RefreshIn */
         RefreshIn: {
@@ -1382,6 +1412,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PresignResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    raw_upload_v1_uploads_raw_post: {
+        parameters: {
+            query: {
+                key: string;
+            };
+            header: {
+                "Content-Type": string;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RawUploadOk"];
                 };
             };
             /** @description Validation Error */

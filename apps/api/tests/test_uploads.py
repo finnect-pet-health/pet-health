@@ -116,3 +116,77 @@ async def test_inmemory_storage_fetch_missing_raises():
     storage = InMemoryStorage()
     with pytest.raises(KeyError):
         await storage.fetch_bytes("does/not/exist")
+
+
+@pytest.mark.asyncio
+async def test_raw_upload_roundtrip_via_presign(app_client, db_session, auth_headers):
+    """AC10 라운드트립: presign → /uploads/raw 로 PUT body → storage.fetch_bytes 검증."""
+    uid = await _make_user(db_session)
+    presign = await app_client.post(
+        "/v1/uploads/presign",
+        json={"modality": "image", "content_type": "image/jpeg"},
+        headers=auth_headers(uid),
+    )
+    assert presign.status_code == 200
+    key = presign.json()["key"]
+
+    body = b"\xff\xd8\xff\xe0\x00\x10JFIF" + b"x" * 200
+    raw = await app_client.post(
+        f"/v1/uploads/raw?key={key}",
+        content=body,
+        headers={"Content-Type": "image/jpeg", **auth_headers(uid)},
+    )
+    assert raw.status_code == 200, raw.text
+    assert raw.json() == {"key": key, "bytes": len(body)}
+
+    storage = InMemoryStorage()
+    fetched = await storage.fetch_bytes(key)
+    assert fetched == body
+
+
+@pytest.mark.asyncio
+async def test_raw_upload_rejects_disallowed_content_type(app_client, db_session, auth_headers):
+    uid = await _make_user(db_session)
+    resp = await app_client.post(
+        "/v1/uploads/raw?key=uploads/x/test.bin",
+        content=b"data",
+        headers={"Content-Type": "application/octet-stream", **auth_headers(uid)},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"]["error"]["code"] == "INVALID_CONTENT_TYPE"
+
+
+@pytest.mark.asyncio
+async def test_raw_upload_rejects_empty_body(app_client, db_session, auth_headers):
+    uid = await _make_user(db_session)
+    resp = await app_client.post(
+        "/v1/uploads/raw?key=uploads/empty/test.jpg",
+        content=b"",
+        headers={"Content-Type": "image/jpeg", **auth_headers(uid)},
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"]["error"]["code"] == "EMPTY_BODY"
+
+
+@pytest.mark.asyncio
+async def test_raw_upload_requires_auth(app_client):
+    resp = await app_client.post(
+        "/v1/uploads/raw?key=uploads/x/y.jpg",
+        content=b"data",
+        headers={"Content-Type": "image/jpeg"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_raw_upload_disabled_in_production(app_client, db_session, auth_headers, monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "app_env", "production")
+
+    uid = await _make_user(db_session)
+    resp = await app_client.post(
+        "/v1/uploads/raw?key=uploads/p/test.jpg",
+        content=b"data",
+        headers={"Content-Type": "image/jpeg", **auth_headers(uid)},
+    )
+    assert resp.status_code == 404
