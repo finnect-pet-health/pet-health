@@ -3,6 +3,28 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+ActionEnum = Literal["immediate", "schedule", "observe"]
+RegionEnum = Literal["skin", "eye", "ear", "gum"]
+AudioCategory = Literal["정상", "기침", "이상호흡", "꼬르륵", "기타"]
+
+
+class VisionTopResult(BaseModel):
+    label: str
+    score: float = Field(ge=0.0, le=1.0)
+
+
+class VisionInferOut(BaseModel):
+    top_results: list[VisionTopResult]
+    action: ActionEnum
+    confidence_top1: float = Field(ge=0.0, le=1.0)
+
+
+class AudioInferOut(BaseModel):
+    category: AudioCategory
+    score: float = Field(ge=0.0, le=1.0)
+    action: ActionEnum
+    confidence_top1: float = Field(ge=0.0, le=1.0)
+
 
 class HealthSnapshotIn(BaseModel):
     ts: datetime

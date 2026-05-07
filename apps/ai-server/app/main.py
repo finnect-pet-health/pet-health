@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, Header, HTTPException
 
+from app.api.v1 import router as v1_router
 from app.config import settings
 from app.inference.disease import infer_disease
 from app.inference.nutrition import infer_nutrition
@@ -18,6 +19,10 @@ async def healthz():
     return {"status": "ok"}
 
 
+# W3-v2: Vision/Audio multimodal inference (HMAC-protected via X-AI-HMAC header).
+app.include_router(v1_router)
+
+# Stage 2 시계열 추론 (W2 자산, Phase 2 부활 후보).
 @app.post("/infer/disease", response_model=DiseaseInferOut, dependencies=[Depends(verify_secret)])
 async def disease(payload: DiseaseInferIn) -> DiseaseInferOut:
     return infer_disease(payload)
