@@ -1,5 +1,6 @@
 from app.models.calendar_task import CalendarTask
 from app.models.device import Device
+from app.models.diagnosis_event import DiagnosisEvent
 from app.models.family import Family
 from app.models.family_member import FamilyMember
 from app.models.hospital import Hospital
@@ -22,4 +23,5 @@ __all__ = [
     "NotificationLog",
     "Device",
     "Hospital",
+    "DiagnosisEvent",
 ]
