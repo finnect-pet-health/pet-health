@@ -13,7 +13,8 @@ spring:
     hibernate:
       ddl-auto: validate          # Flyway 가 schema 관리; JPA 는 검증만
     properties:
-      hibernate.dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+      # Hibernate 6 은 PostgreSQLDialect 자동 감지 + hibernate-spatial 의존성만 있으면
+      # geometry 타입 자동 처리. 명시 dialect 설정 불필요.
       hibernate.format_sql: true
 
   flyway:
