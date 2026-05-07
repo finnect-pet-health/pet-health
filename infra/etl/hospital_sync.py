@@ -184,16 +184,24 @@ def load_static_seed(path: Path | None = None) -> list[dict[str, Any]]:
     return out
 
 
-async def upsert_rows(rows: list[dict[str, Any]]) -> int:
+async def upsert_rows(
+    rows: list[dict[str, Any]], session: Any = None
+) -> int:
     """`hospital` 테이블에 mgmt_no 기준 upsert.
 
     location = ST_SetSRID(ST_MakePoint(lng, lat), 4326).
     좌표 결측 row 는 location=NULL 로 적재 — 추후 카카오 지오코딩 fallback (W3-v2 D4) 에서 보정.
+
+    `session` 은 테스트에서 주입 (savepoint 격리 보존). 미지정 시 환경 DSN 으로 자체 engine 생성.
     """
     if not rows:
         return 0
 
     from sqlalchemy import text
+
+    if session is not None:
+        return await _upsert_with_session(session, rows, text)
+
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     dsn = os.environ.get("POSTGRES_DSN") or os.environ.get(
@@ -203,52 +211,59 @@ async def upsert_rows(rows: list[dict[str, Any]]) -> int:
     engine = create_async_engine(dsn, future=True)
     sessionmaker_ = async_sessionmaker(engine, expire_on_commit=False)
 
-    stmt = text(
-        """
-        INSERT INTO hospital (
-            id, mgmt_no, name, road_addr, lot_addr, zip, tel, status,
-            licensed_at, authority_code, location, updated_at
-        )
-        VALUES (
-            gen_random_uuid(), :mgmt_no, :name, :road_addr, :lot_addr, :zip, :tel, :status,
-            :licensed_at, :authority_code,
-            CASE
-                WHEN CAST(:lng AS double precision) IS NULL
-                  OR CAST(:lat AS double precision) IS NULL
-                THEN NULL
-                ELSE ST_SetSRID(
-                    ST_MakePoint(
-                        CAST(:lng AS double precision),
-                        CAST(:lat AS double precision)
-                    ),
-                    4326
-                )
-            END,
-            now()
-        )
-        ON CONFLICT (mgmt_no) DO UPDATE SET
-            name = EXCLUDED.name,
-            road_addr = EXCLUDED.road_addr,
-            lot_addr = EXCLUDED.lot_addr,
-            zip = EXCLUDED.zip,
-            tel = EXCLUDED.tel,
-            status = EXCLUDED.status,
-            licensed_at = EXCLUDED.licensed_at,
-            authority_code = EXCLUDED.authority_code,
-            location = EXCLUDED.location,
-            updated_at = now()
-        """
-    )
-
     affected = 0
-    async with sessionmaker_() as session:
-        for r in rows:
-            if not r.get("mgmt_no") or not r.get("name"):
-                continue
-            await session.execute(stmt, r)
-            affected += 1
-        await session.commit()
+    async with sessionmaker_() as ssn:
+        affected = await _upsert_with_session(ssn, rows, text)
+        await ssn.commit()
     await engine.dispose()
+    return affected
+
+
+_UPSERT_SQL = """
+INSERT INTO hospital (
+    id, mgmt_no, name, road_addr, lot_addr, zip, tel, status,
+    licensed_at, authority_code, location, updated_at
+)
+VALUES (
+    gen_random_uuid(), :mgmt_no, :name, :road_addr, :lot_addr, :zip, :tel, :status,
+    :licensed_at, :authority_code,
+    CASE
+        WHEN CAST(:lng AS double precision) IS NULL
+          OR CAST(:lat AS double precision) IS NULL
+        THEN NULL
+        ELSE ST_SetSRID(
+            ST_MakePoint(
+                CAST(:lng AS double precision),
+                CAST(:lat AS double precision)
+            ),
+            4326
+        )
+    END,
+    now()
+)
+ON CONFLICT (mgmt_no) DO UPDATE SET
+    name = EXCLUDED.name,
+    road_addr = EXCLUDED.road_addr,
+    lot_addr = EXCLUDED.lot_addr,
+    zip = EXCLUDED.zip,
+    tel = EXCLUDED.tel,
+    status = EXCLUDED.status,
+    licensed_at = EXCLUDED.licensed_at,
+    authority_code = EXCLUDED.authority_code,
+    location = EXCLUDED.location,
+    updated_at = now()
+"""
+
+
+async def _upsert_with_session(session: Any, rows: list[dict[str, Any]], text_fn: Any) -> int:
+    """주입된 session 으로 upsert. commit 은 호출자 책임 (savepoint 격리 보존)."""
+    stmt = text_fn(_UPSERT_SQL)
+    affected = 0
+    for r in rows:
+        if not r.get("mgmt_no") or not r.get("name"):
+            continue
+        await session.execute(stmt, r)
+        affected += 1
     return affected
 
 
