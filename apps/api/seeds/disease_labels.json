@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "schema": "disease_labels_v1",
+  "notes": "W3-v2 D1 초안. 영어 모델 라벨 ↔ 한국어 UI 매핑. action_default 는 모델 fine-tune 전 룰 기반 fallback 용 (시연 시드 생성 시 활용). 본선 전 수의사 자문 review 의무 (R5).",
+  "regions": {
+    "skin": [
+      {"label": "skin_normal", "ko": "피부 정상", "action_default": "observe"},
+      {"label": "skin_redness", "ko": "피부 발적/염증", "action_default": "schedule"},
+      {"label": "skin_alopecia", "ko": "탈모", "action_default": "schedule"},
+      {"label": "skin_infection", "ko": "피부 감염 의심", "action_default": "immediate"},
+      {"label": "skin_parasites", "ko": "기생충 의심", "action_default": "schedule"}
+    ],
+    "eye": [
+      {"label": "eye_normal", "ko": "눈 정상", "action_default": "observe"},
+      {"label": "eye_discharge", "ko": "눈곱/분비물", "action_default": "schedule"},
+      {"label": "eye_redness", "ko": "결막 충혈", "action_default": "schedule"},
+      {"label": "eye_cataract", "ko": "백내장 의심", "action_default": "schedule"},
+      {"label": "eye_conjunctivitis", "ko": "결막염 의심", "action_default": "immediate"}
+    ],
+    "ear": [
+      {"label": "ear_normal", "ko": "귀 정상", "action_default": "observe"},
+      {"label": "ear_inflammation", "ko": "귀 염증", "action_default": "schedule"},
+      {"label": "ear_otitis", "ko": "외이염 의심", "action_default": "immediate"},
+      {"label": "ear_mites", "ko": "귀진드기 의심", "action_default": "schedule"},
+      {"label": "ear_dirty", "ko": "귀지 과다", "action_default": "observe"}
+    ],
+    "gum": [
+      {"label": "gum_normal", "ko": "잇몸 정상", "action_default": "observe"},
+      {"label": "gum_paleness", "ko": "잇몸 창백 (빈혈 의심)", "action_default": "immediate"},
+      {"label": "gum_periodontal", "ko": "치주 질환 의심", "action_default": "schedule"},
+      {"label": "gum_bleeding", "ko": "잇몸 출혈", "action_default": "immediate"},
+      {"label": "gum_swelling", "ko": "잇몸 부종", "action_default": "schedule"}
+    ]
+  },
+  "audio_categories": [
+    {"label": "정상", "ko": "정상", "action_default": "observe"},
+    {"label": "기침", "ko": "기침", "action_default": "schedule"},
+    {"label": "이상호흡", "ko": "이상 호흡", "action_default": "immediate"},
+    {"label": "꼬르륵", "ko": "장 소리 (꼬르륵)", "action_default": "observe"},
+    {"label": "기타", "ko": "기타/분류 불가", "action_default": "observe"}
+  ]
+}
