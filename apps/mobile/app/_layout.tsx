@@ -41,6 +41,8 @@ export default function RootLayout() {
             <Stack.Screen name="login" />
             <Stack.Screen name="onboarding/family" />
             <Stack.Screen name="index" />
+            <Stack.Screen name="hospitals/index" />
+            <Stack.Screen name="diagnose" />
           </Stack>
         </AuthGuard>
         <StatusBar style="auto" />
