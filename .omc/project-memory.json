@@ -1,0 +1,286 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1777857734022,
+  "projectRoot": "/home/hidi/dev/health_pet",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pnpm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "make build",
+    "testCommand": "git rm --cached apps/api/alembic/versions/0002_w2_models.py 2>&1 | tail -2 && \\\necho \"--- final C2 staged W2 check ---\" && \\\ngit diff --cached --name-only | grep -E \"(0002|fatsecret|app/seeds|seeds/__init|apps/api/app/models/meal|apps/api/app/models/calendar|apps/api/app/models/vet|apps/api/app/models/pet_food|apps/api/app/models/notification|apps/api/app/models/device)\" || echo \"✅ clean — no W2-v2 files in C2 stage\"\necho \"--- C2 commit ---\"\ngit commit -m \"$(cat <<'EOF'\nfeat: W1 — Auth/Family/Pet CRUD + 카카오 OAuth + JWT + 모바일 인증 흐름\n\n백엔드 (apps/api):\n- FastAPI + SQLAlchemy 2.0 + Alembic 0001 (User/Family/FamilyMember/Pet)\n- JWT HS256 access(15m)/refresh(14d) + Redis 회전·폐기\n- Kakao OAuth 2.0 (real/mock factory + RealKakaoOAuthClient stub)\n- HealthProvider Protocol + MockHealthProvider (이미지/오디오 진단 데이터로 재활용 예정)\n- /v1/auth/{kakao,refresh,logout}, /v1/me, /v1/families CRUD + 초대/가입, /v1/pets CRUD\n- require_family RBAC 미들웨어 (owner/member 권한 매트릭스)\n- 65/65 pytest 통과, 84% 커버리지, ruff strict, mypy 일부 허용\n\n모바일 (apps/mobile):\n- Expo SDK 51 + expo-router + zustand auth store\n- SecureStore 토큰 저장, axios 401 refresh-retry 인터셉터\n- /login (mock 셀렉터), /onboarding/family, _layout 토큰 가드\n\n기타:\n- AI 서버 스캐폴딩 (apps/ai-server, FastAPI + 추론 stub)\n- packages/shared-types (OpenAPI codegen)\n- infra/etl/hospital_sync.py 골격, infra/tunnels (Cloudflare Tunnel)\n- docs/specs (auth-and-family, 02-health-analysis, 05-medical-budget-savings)\n- docs/spikes (caretail, kakao-map, external-apis)\n- docs/proposal-outline (사업계획서 골격), docs/w1-retrospective\n- docs/api/openapi-w1.json (OpenAPI export)\n- .github/workflows/api.yml (pytest + ruff + mypy)\n\nCo-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>\nEOF\n)\" 2>&1 | tail -3",
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": true,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "apps": {
+      "path": "apps",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777857734008,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1777857734008,
+      "keyFiles": [
+        "proposal-outline.md",
+        "w1-retrospective.md"
+      ]
+    },
+    "infra": {
+      "path": "infra",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777857734016,
+      "keyFiles": []
+    },
+    "packages": {
+      "path": "packages",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777857734019,
+      "keyFiles": []
+    },
+    "apps/api": {
+      "path": "apps/api",
+      "purpose": "API routes",
+      "fileCount": 4,
+      "lastAccessed": 1777857734019,
+      "keyFiles": [
+        "Dockerfile",
+        "alembic.ini",
+        "pyproject.toml"
+      ]
+    },
+    "docs/api": {
+      "path": "docs/api",
+      "purpose": "API routes",
+      "fileCount": 1,
+      "lastAccessed": 1777857734020,
+      "keyFiles": [
+        "openapi-w1.json"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "docs/specs/02-health-analysis.md",
+      "accessCount": 8,
+      "lastAccessed": 1778139080765,
+      "type": "file"
+    },
+    {
+      "path": "docs/proposal-outline.md",
+      "accessCount": 6,
+      "lastAccessed": 1778074245665,
+      "type": "file"
+    },
+    {
+      "path": "apps/ai-server/scripts/spike_animalclap.py",
+      "accessCount": 6,
+      "lastAccessed": 1778138430641,
+      "type": "file"
+    },
+    {
+      "path": "docs/specs/05-medical-budget-savings.md",
+      "accessCount": 5,
+      "lastAccessed": 1778074216626,
+      "type": "file"
+    },
+    {
+      "path": ".env",
+      "accessCount": 4,
+      "lastAccessed": 1778139240940,
+      "type": "file"
+    },
+    {
+      "path": "docs/w1-retrospective.md",
+      "accessCount": 3,
+      "lastAccessed": 1777979674904,
+      "type": "file"
+    },
+    {
+      "path": "docs/spikes/external-apis.md",
+      "accessCount": 2,
+      "lastAccessed": 1777961350448,
+      "type": "file"
+    },
+    {
+      "path": "docs/spikes/kakao-map-spike.md",
+      "accessCount": 2,
+      "lastAccessed": 1777961350862,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/api/v1/auth.py",
+      "accessCount": 2,
+      "lastAccessed": 1778048341513,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 2,
+      "lastAccessed": 1778139241118,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1777857782408,
+      "type": "file"
+    },
+    {
+      "path": "docker-compose.yml",
+      "accessCount": 1,
+      "lastAccessed": 1777857782557,
+      "type": "file"
+    },
+    {
+      "path": "docs/specs/auth-and-family.md",
+      "accessCount": 1,
+      "lastAccessed": 1777956824112,
+      "type": "file"
+    },
+    {
+      "path": "docs/spikes/caretail-spike.md",
+      "accessCount": 1,
+      "lastAccessed": 1777956824504,
+      "type": "file"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "accessCount": 1,
+      "lastAccessed": 1777961032568,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/alembic/versions/0001_init.py",
+      "accessCount": 1,
+      "lastAccessed": 1777961566108,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/integrations/health/mock.py",
+      "accessCount": 1,
+      "lastAccessed": 1777961707879,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/integrations/kakao/mock.py",
+      "accessCount": 1,
+      "lastAccessed": 1777961708216,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/api/v1/families.py",
+      "accessCount": 1,
+      "lastAccessed": 1777962047400,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/tests/test_rbac.py",
+      "accessCount": 1,
+      "lastAccessed": 1777962047504,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/services/auth.py",
+      "accessCount": 1,
+      "lastAccessed": 1777962482647,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/security/deps.py",
+      "accessCount": 1,
+      "lastAccessed": 1777962482667,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/integrations/health/__init__.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048334556,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/api/v1/health.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048337021,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/main.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048339521,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/models/pet.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048344017,
+      "type": "file"
+    },
+    {
+      "path": "apps/ai-server/app/main.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048347079,
+      "type": "file"
+    },
+    {
+      "path": "apps/mobile/src/api/client.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778048349589,
+      "type": "file"
+    },
+    {
+      "path": "apps/api/app/api/v1/__init__.py",
+      "accessCount": 1,
+      "lastAccessed": 1778048353208,
+      "type": "file"
+    },
+    {
+      "path": "apps/ai-server/pyproject.toml",
+      "accessCount": 1,
+      "lastAccessed": 1778138105981,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

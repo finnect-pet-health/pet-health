@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "started_at": "2026-05-05T06:05:01.255Z",
+  "original_prompt": "/oh-my-claudecode:ultrawork",
+  "session_id": "d7d7bd34-24a7-40d8-a267-f5ade06bf055",
+  "project_path": "/home/hidi/dev/health_pet",
+  "reinforcement_count": 1,
+  "awaiting_confirmation": true,
+  "awaiting_confirmation_set_at": "2026-05-05T06:05:01.255Z",
+  "last_checked_at": "2026-05-05T06:07:32.552Z"
+}
