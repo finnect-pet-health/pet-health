@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    # Testcontainers 가 url 을 동적 주입 (TC_URL placeholder 또는 @ServiceConnection)
+    url: ${TEST_POSTGRES_URL:jdbc:postgresql://localhost:5434/petfinect_test}
+    username: ${TEST_POSTGRES_USER:petfinect}
+    password: ${TEST_POSTGRES_PASSWORD:petfinect}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    clean-disabled: false           # 테스트 격리 위해 clean 허용
+
+petfinect:
+  jwt:
+    secret: test-secret-32-bytes-padding-ok-test-secret
+  ai-server:
+    base-url: http://mock-ai
+    shared-secret: test-shared-secret
