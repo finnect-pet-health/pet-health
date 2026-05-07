@@ -49,7 +49,7 @@ W4 종료(2026-05-25 17:00 KST 챌린지 포털 업로드) 시점에 다음이 �
 
 | # | 기준 | 검증 방법 |
 |---|---|---|
-| AC1 | `apps/api/seeds/specialty_mapping.json` 이 W3-v2 진단 라벨 카탈로그(이미지+오디오 ≥ 12 라벨) 100% 커버, 각 라벨에 `specialty: enum('피부과','안과','이비인후과','내과','응급')` + `urgency: enum('routine','soon','urgent','emergency')` 매핑 존재 | `pytest apps/api/tests/test_triage.py::test_specialty_mapping_full_coverage` |
+| AC1 | `apps/api/seeds/specialty_mapping.json` 이 W3-v2 라벨 카탈로그(`apps/api/seeds/disease_labels.json` — 4 region × 5 label = 20 + 5 audio cat) 100% 커버, 각 라벨에 `specialty: enum('피부과','안과','이비인후과','내과','응급')` + `urgency: enum('routine','soon','urgent','emergency')` 매핑 존재 | `pytest apps/api/tests/test_triage.py::test_specialty_mapping_full_coverage` |
 | AC2 | `triage(diagnosis_event_id)` 가 image/audio top-3 라벨 입력에 대해 `{ specialties: list[str], urgency: enum }` 결정적 반환 (top-1 specialty 우선, urgency 는 max severity) | `pytest ::test_triage_deterministic_for_demo_scenarios` |
 | AC3 | `GET /v1/hospitals/nearby?lat=&lng=&specialty=피부과` 응답이 specialty 일치 병원 우선 정렬 + 각 항목에 `specialty_match: bool` + `score: float (0..1)` 포함 (score = `0.5*distance_norm + 0.3*specialty_match + 0.2*open_now`) | `pytest apps/api/tests/test_hospitals.py::test_specialty_filter_score` |
 | AC4 | 모든 진단·병원 응답이 `disclaimer: { medical: str, financial: str }` 객체 동봉(빈 문자열 금지). budget placeholder 응답에는 financial 디스클레이머가 본선 보류 문구 포함 | `pytest ::test_disclaimer_envelope_present` (파라미터화 테스트로 ≥ 6 엔드포인트 검증) |
@@ -345,15 +345,15 @@ apps/api/
   app/services/triage.py                                  [new]
   app/services/hospital_match.py                          [new or edit: score 계산]
   app/middlewares/disclaimer.py                           [new]
-  app/api/v1/diagnose.py                                  [edit: triage 필드 추가]
-  app/api/v1/hospitals.py                                 [edit: specialty 필터 + score]
-  app/core/config.py                                      [edit: AI_SERVER_USE_MOCK 강제]
-  app/integrations/vision/mock.py                         [edit: hash 매핑 강화]
-  app/integrations/audio/mock.py                          [edit: hash 매핑 강화]
-  seeds/specialty_mapping.json                            [new]
+  app/api/v1/diagnose.py                                  [edit: triage + disclaimer envelope]
+  app/api/v1/hospitals.py                                 [edit: specialty 필터 + score + disclaimer]
+  app/config.py                                           [edit: AI_SERVER_USE_MOCK 강제 (5.7 정정 — app/core/config.py 가 아닌 app/config.py)]
+  app/integrations/ai_server/mock.py                      [edit: hash 매핑 강화 (5.7 정정 — vision/audio 통합 mock 단일 파일)]
+  seeds/disease_labels.json                               [reuse: W3-v2 head-start; specialty_mapping.json 의 라벨 source-of-truth]
+  seeds/specialty_mapping.json                            [new — disease_labels.json 라벨 → specialty/urgency 매핑]
   seeds/demo_scenarios.py                                 [new]
   tests/test_triage.py                                    [new]
-  tests/test_hospitals.py                                 [edit: specialty 케이스]
+  tests/test_hospitals.py                                 [edit: specialty 케이스 (W3-v2 head-start 가 nearby PostGIS 까지 완료)]
   tests/test_disclaimer_envelope.py                       [new]
   tests/test_mock_determinism.py                          [new]
   tests/test_e2e_demo_scenarios.py                        [new]
@@ -369,7 +369,10 @@ apps/mobile/
                             AudioDiagnosisCard,
                             DietCard,
                             BudgetPlaceholderCard}.tsx    [new]
-  src/components/MedicalDisclaimer.tsx                    [new]
+  src/components/MedicalDisclaimer.tsx                    [reuse: W3-v2 head-start — variant prop 기반]
+  src/components/DiagnosisResultCard.tsx                  [reuse: W3-v2 head-start — top-3 + action 칩 + confidence]
+  src/components/HospitalListItem.tsx                     [reuse: W3-v2 head-start — tel/거리/주소]
+  src/copy/medical-disclaimer-ko.ts                       [reuse: W3-v2 head-start; 금융 카피 추가 필요 (W4)]
   src/api/dashboard.ts                                    [new]
 
 packages/shared-types/                                    [edit: triage, disclaimer, hospital score]
@@ -426,3 +429,10 @@ submission/
 
 - 2026-05-04 — 초안 작성. 상위 SOT(`~/.claude/plans/jazzy-roaming-rose.md`) 의 W4-v2 분담을 기반으로 4일 일정 + Day 4 시간 단위 freeze 일정 + 12 AC + 7 risks + ASCII bar chart + 제출 패키지 frozen checklist 포함. 의료비/적금은 placeholder 카드로 본선 보류, 시연 영상은 멀티모달 데모로 대체.
 - 2026-05-07 — **Caretail 워치 통합 완전 제거** (2026-05-07 결정). 대시보드 4섹션 → 3섹션 (이미지/오디오/식이). WatchCard 삭제. Scenario B 워치 mock 연결 제거 → 기침 음성 + 식이 처방식만. demo_scenarios.py 양 시나리오 워치 데이터 없음. Out of Scope 에 Caretail 항목 추가.
+- 2026-05-07 (head-start) — W3-v2 head-start 8일 선행 결과물 반영. File Map 의 reuse 후보 명시:
+  - `apps/api/seeds/disease_labels.json` (4 region × 5 + 5 audio cat) — `specialty_mapping.json` 의 라벨 source-of-truth
+  - 모바일 `MedicalDisclaimer`/`DiagnosisResultCard`/`HospitalListItem`/`medical-disclaimer-ko.ts` — Day 1 신규 작성 대신 dashboard 카드에서 import 만으로 재사용
+  - 경로 정정: plan v1 의 `app/core/config.py` → `app/config.py`, vision/audio 분리 mock → `app/integrations/ai_server/mock.py` 통합
+  - `/v1/hospitals/nearby` PostGIS ST_DWithin 본 시작일 전 완료 → Day 1 backend 트랙은 specialty filter + score 가산만 작업
+  - AI 서버 mTLS scaffold (`scripts/security/gen_dev_certs.sh` + `app/security/mtls.py` + `app/serve.py`) 완료 → Day 1 트랙에서 운영 인증서 paste 만 남음
+  - 학습/평가 scaffold (`scripts/{train,eval}_{vision,audio}.py`) + 다운로드 스크립트 + 의존성 (torchvision/torchaudio/librosa) 완료 → 데이터셋 다운만 시작 가능
