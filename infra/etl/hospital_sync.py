@@ -3,7 +3,7 @@
 실행:
     python -m infra.etl.hospital_sync           # 전체 페이지 fetch + dry-run (DB 미저장)
     python -m infra.etl.hospital_sync --pages 1 # 첫 페이지만
-    python -m infra.etl.hospital_sync --upsert  # DB upsert (W3-v2 Day 5에 활성화)
+    python -m infra.etl.hospital_sync --upsert  # DB upsert (mgmt_no 기준)
 
 데이터 소스:
 - data.go.kr OpenAPI (검증 완료 2026-05-07)
@@ -27,10 +27,13 @@
     MNG_NO           → mgmt_no (관리번호, 고유 식별자, upsert key)
     OPN_ATMY_GRP_CD  → authority_code (인허가관청 코드)
 
-주의:
-- 좌표는 EPSG:5174 (Bessel TM 중부원점) → WGS84 변환 필요. W3-v2 에 pyproj 추가 후 구현.
-- ServiceKey 는 Decoding 키 사용 (Encoding 키는 이중 인코딩 오류 발생).
-- 폐업/휴업 (SALS_STTS_NM != "영업/정상") 필터링 권장.
+좌표:
+- API 의 EPSG:5174 (Bessel TM 중부원점) 좌표를 pyproj 로 EPSG:4326 (WGS84) 으로 변환.
+- 좌표 결측 row (tm_x/tm_y 둘 중 하나라도 비어있음) 는 lat/lng=None 으로 둠.
+  PostGIS POINT location 컬럼은 nullable, ST_DWithin 조회 시 자연 제외.
+
+ServiceKey:
+- Decoding 키 사용. Encoding 키는 이중 인코딩 오류 발생.
 """
 from __future__ import annotations
 
@@ -45,18 +48,34 @@ import httpx
 ENDPOINT = "https://apis.data.go.kr/1741000/animal_hospitals/info"
 DATA_GO_KR_API_KEY = os.environ.get("DATA_GO_KR_API_KEY", "")
 
+# Lazy pyproj transformer (creation cost ~10ms, reused across rows).
+_TRANSFORMER: Any = None
+
+
+def _get_transformer() -> Any:
+    """EPSG:5174 (Bessel TM 중부원점) → EPSG:4326 (WGS84) Transformer.
+
+    pyproj.Transformer 는 thread-safe + 내부 캐시 — 모듈 단위 1회 생성 후 재사용.
+    """
+    global _TRANSFORMER
+    if _TRANSFORMER is None:
+        from pyproj import Transformer
+
+        _TRANSFORMER = Transformer.from_crs(5174, 4326, always_xy=True)
+    return _TRANSFORMER
+
+
+def tm_to_wgs84(tm_x: float, tm_y: float) -> tuple[float, float]:
+    """EPSG:5174 (x, y) → (lng, lat) WGS84. always_xy=True 이므로 출력도 (lng, lat) 순."""
+    transformer = _get_transformer()
+    lng, lat = transformer.transform(tm_x, tm_y)
+    return lng, lat
+
 
 async def fetch_page(
     client: httpx.AsyncClient, page: int, num_rows: int = 1000
 ) -> tuple[list[dict[str, Any]], int]:
-    """단일 페이지 fetch. (rows, total_count) 튜플 반환.
-
-    >>> rows, total = await fetch_page(client, page=1, num_rows=3)
-    >>> total  # 전국 동물병원 수, 약 10,500
-    10516
-    >>> rows[0]["BPLC_NM"]
-    '브라이튼안과치과동물병원'
-    """
+    """단일 페이지 fetch. (rows, total_count) 튜플 반환."""
     params = {
         "serviceKey": DATA_GO_KR_API_KEY,
         "pageNo": str(page),
@@ -80,7 +99,13 @@ def is_active(row: dict[str, Any]) -> bool:
 
 
 def transform_row(row: dict[str, Any]) -> dict[str, Any]:
-    """raw API row → 내부 Hospital schema. 좌표 변환은 W3-v2 Day 5 에 pyproj 추가 후 구현."""
+    """raw API row → 내부 Hospital schema (lng/lat 포함, EPSG:4326)."""
+    tm_x = float(row["CRD_INFO_X"]) if row.get("CRD_INFO_X") else None
+    tm_y = float(row["CRD_INFO_Y"]) if row.get("CRD_INFO_Y") else None
+    if tm_x is not None and tm_y is not None:
+        lng, lat = tm_to_wgs84(tm_x, tm_y)
+    else:
+        lng, lat = None, None
     return {
         "mgmt_no": row.get("MNG_NO"),
         "name": row.get("BPLC_NM"),
@@ -90,21 +115,80 @@ def transform_row(row: dict[str, Any]) -> dict[str, Any]:
         "tel": row.get("TELNO") or "",
         "status": row.get("SALS_STTS_NM") or "",
         "licensed_at": row.get("LCPMT_YMD") or None,
-        "tm_x": float(row["CRD_INFO_X"]) if row.get("CRD_INFO_X") else None,
-        "tm_y": float(row["CRD_INFO_Y"]) if row.get("CRD_INFO_Y") else None,
-        # TODO(W3-v2 D5): pyproj Transformer EPSG:5174 → EPSG:4326 → lat/lng
-        "lat": None,
-        "lng": None,
         "authority_code": row.get("OPN_ATMY_GRP_CD") or "",
-        "raw": row,  # 디버깅용 원본 보존
+        "tm_x": tm_x,
+        "tm_y": tm_y,
+        "lat": lat,
+        "lng": lng,
     }
 
 
 async def upsert_rows(rows: list[dict[str, Any]]) -> int:
-    """DB upsert. W3-v2 Day 5 에 Hospital 모델 + Alembic 0005 + PostGIS 추가 후 구현."""
-    raise NotImplementedError(
-        "Hospital 모델·Alembic 0005·PostGIS·pyproj 가 W3-v2 Day 5 에 추가된 후 구현"
+    """`hospital` 테이블에 mgmt_no 기준 upsert.
+
+    location = ST_SetSRID(ST_MakePoint(lng, lat), 4326).
+    좌표 결측 row 는 location=NULL 로 적재 — 추후 카카오 지오코딩 fallback (W3-v2 D4) 에서 보정.
+    """
+    if not rows:
+        return 0
+
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    dsn = os.environ.get("POSTGRES_DSN") or os.environ.get(
+        "DATABASE_URL",
+        "postgresql+asyncpg://petfinect:petfinect@localhost:5434/petfinect",
     )
+    engine = create_async_engine(dsn, future=True)
+    sessionmaker_ = async_sessionmaker(engine, expire_on_commit=False)
+
+    stmt = text(
+        """
+        INSERT INTO hospital (
+            id, mgmt_no, name, road_addr, lot_addr, zip, tel, status,
+            licensed_at, authority_code, location, updated_at
+        )
+        VALUES (
+            gen_random_uuid(), :mgmt_no, :name, :road_addr, :lot_addr, :zip, :tel, :status,
+            :licensed_at, :authority_code,
+            CASE
+                WHEN CAST(:lng AS double precision) IS NULL
+                  OR CAST(:lat AS double precision) IS NULL
+                THEN NULL
+                ELSE ST_SetSRID(
+                    ST_MakePoint(
+                        CAST(:lng AS double precision),
+                        CAST(:lat AS double precision)
+                    ),
+                    4326
+                )
+            END,
+            now()
+        )
+        ON CONFLICT (mgmt_no) DO UPDATE SET
+            name = EXCLUDED.name,
+            road_addr = EXCLUDED.road_addr,
+            lot_addr = EXCLUDED.lot_addr,
+            zip = EXCLUDED.zip,
+            tel = EXCLUDED.tel,
+            status = EXCLUDED.status,
+            licensed_at = EXCLUDED.licensed_at,
+            authority_code = EXCLUDED.authority_code,
+            location = EXCLUDED.location,
+            updated_at = now()
+        """
+    )
+
+    affected = 0
+    async with sessionmaker_() as session:
+        for r in rows:
+            if not r.get("mgmt_no") or not r.get("name"):
+                continue
+            await session.execute(stmt, r)
+            affected += 1
+        await session.commit()
+    await engine.dispose()
+    return affected
 
 
 async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
@@ -115,6 +199,7 @@ async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
     page = 1
     fetched = 0
     active = 0
+    upserted = 0
     total = 0
     async with httpx.AsyncClient(timeout=30) as client:
         while True:
@@ -124,25 +209,28 @@ async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
             transformed = [transform_row(r) for r in rows if is_active(r)]
             fetched += len(rows)
             active += len(transformed)
+            if do_upsert:
+                upserted += await upsert_rows(transformed)
             print(
                 f"page={page:3d} fetched={len(rows):4d} active={len(transformed):4d} "
-                f"total_so_far={fetched}/{total}"
+                f"upserted={upserted if do_upsert else 0:4d} total_so_far={fetched}/{total}"
             )
-            if do_upsert:
-                await upsert_rows(transformed)
             if max_pages and page >= max_pages:
                 break
             if fetched >= total:
                 break
             page += 1
-    print(f"\n✅ done — fetched {fetched} rows ({active} 영업중) of {total} total")
+    print(
+        f"\n✅ done — fetched {fetched} rows ({active} 영업중) of {total} total"
+        + (f", upserted {upserted}" if do_upsert else "")
+    )
     return 0
 
 
 def cli() -> int:
     parser = argparse.ArgumentParser(description="동물병원 ETL")
     parser.add_argument("--pages", type=int, default=None, help="최대 페이지 수 (테스트용)")
-    parser.add_argument("--upsert", action="store_true", help="DB upsert 활성화 (W3-v2 D5+)")
+    parser.add_argument("--upsert", action="store_true", help="DB upsert 활성화")
     args = parser.parse_args()
     return asyncio.run(main(max_pages=args.pages, do_upsert=args.upsert))
 
