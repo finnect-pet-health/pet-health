@@ -4,6 +4,8 @@
     python -m infra.etl.hospital_sync           # 전체 페이지 fetch + dry-run (DB 미저장)
     python -m infra.etl.hospital_sync --pages 1 # 첫 페이지만
     python -m infra.etl.hospital_sync --upsert  # DB upsert (mgmt_no 기준)
+    python -m infra.etl.hospital_sync --seed    # apps/api/seeds/hospitals_seoul.json
+                                                #   50건 정적 시드 fallback (R6 대비)
 
 데이터 소스:
 - data.go.kr OpenAPI (검증 완료 2026-05-07)
@@ -39,14 +41,19 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
 import httpx
 
 ENDPOINT = "https://apis.data.go.kr/1741000/animal_hospitals/info"
 DATA_GO_KR_API_KEY = os.environ.get("DATA_GO_KR_API_KEY", "")
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+SEED_PATH = _REPO_ROOT / "apps" / "api" / "seeds" / "hospitals_seoul.json"
 
 # Lazy pyproj transformer (creation cost ~10ms, reused across rows).
 _TRANSFORMER: Any = None
@@ -123,6 +130,60 @@ def transform_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+async def enrich_with_geocoding(
+    rows: list[dict[str, Any]], geocoder: Any
+) -> int:
+    """좌표 결측 row 를 카카오 로컬 API 지오코딩으로 보정. 채워진 건수 반환.
+
+    `geocoder` 는 `KakaoLocalClient` Protocol 구현체. mock 또는 실 클라이언트.
+    `road_addr` 비어있으면 lot_addr 시도. 둘 다 비면 그대로 둠.
+    """
+    enriched = 0
+    for r in rows:
+        if r.get("lat") is not None and r.get("lng") is not None:
+            continue
+        addr = r.get("road_addr") or r.get("lot_addr") or ""
+        if not addr:
+            continue
+        result = await geocoder.geocode_address(addr)
+        if result is None:
+            continue
+        lat, lng = result
+        r["lat"] = lat
+        r["lng"] = lng
+        enriched += 1
+    return enriched
+
+
+def load_static_seed(path: Path | None = None) -> list[dict[str, Any]]:
+    """50건 정적 시드를 transform_row 호환 schema 로 로드 (R6 fallback).
+
+    누락 필드는 기본값으로 채움. tm_x/tm_y 는 None 유지 (좌표는 lat/lng 직접 보유).
+    """
+    seed_path = path or SEED_PATH
+    raw = json.loads(seed_path.read_text(encoding="utf-8"))
+    out: list[dict[str, Any]] = []
+    for r in raw:
+        out.append(
+            {
+                "mgmt_no": r["mgmt_no"],
+                "name": r["name"],
+                "road_addr": r.get("road_addr", ""),
+                "lot_addr": r.get("lot_addr", ""),
+                "zip": r.get("zip", ""),
+                "tel": r.get("tel", ""),
+                "status": r.get("status", "영업/정상"),
+                "licensed_at": r.get("licensed_at"),
+                "authority_code": r.get("authority_code", ""),
+                "tm_x": None,
+                "tm_y": None,
+                "lat": r["lat"],
+                "lng": r["lng"],
+            }
+        )
+    return out
+
+
 async def upsert_rows(rows: list[dict[str, Any]]) -> int:
     """`hospital` 테이블에 mgmt_no 기준 upsert.
 
@@ -191,14 +252,40 @@ async def upsert_rows(rows: list[dict[str, Any]]) -> int:
     return affected
 
 
-async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
+async def main(
+    max_pages: int | None = None,
+    do_upsert: bool = False,
+    seed_only: bool = False,
+    do_geocode: bool = False,
+) -> int:
+    if seed_only:
+        rows = load_static_seed()
+        if do_geocode:
+            from app.integrations.kakao.local import get_kakao_local_client
+
+            geocoder = get_kakao_local_client()
+            await enrich_with_geocoding(rows, geocoder)
+        upserted = await upsert_rows(rows) if do_upsert else 0
+        print(
+            f"✅ seed mode — loaded {len(rows)} rows from {SEED_PATH.name}"
+            + (f", upserted {upserted}" if do_upsert else " (dry-run)")
+        )
+        return 0
+
     if not DATA_GO_KR_API_KEY:
         print("DATA_GO_KR_API_KEY not set in environment", file=sys.stderr)
         return 1
 
+    geocoder = None
+    if do_geocode:
+        from app.integrations.kakao.local import get_kakao_local_client
+
+        geocoder = get_kakao_local_client()
+
     page = 1
     fetched = 0
     active = 0
+    geocoded = 0
     upserted = 0
     total = 0
     async with httpx.AsyncClient(timeout=30) as client:
@@ -207,13 +294,16 @@ async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
             if not rows:
                 break
             transformed = [transform_row(r) for r in rows if is_active(r)]
+            if geocoder is not None:
+                geocoded += await enrich_with_geocoding(transformed, geocoder)
             fetched += len(rows)
             active += len(transformed)
             if do_upsert:
                 upserted += await upsert_rows(transformed)
             print(
                 f"page={page:3d} fetched={len(rows):4d} active={len(transformed):4d} "
-                f"upserted={upserted if do_upsert else 0:4d} total_so_far={fetched}/{total}"
+                f"upserted={upserted if do_upsert else 0:4d} "
+                f"geocoded={geocoded:4d} total_so_far={fetched}/{total}"
             )
             if max_pages and page >= max_pages:
                 break
@@ -223,6 +313,7 @@ async def main(max_pages: int | None = None, do_upsert: bool = False) -> int:
     print(
         f"\n✅ done — fetched {fetched} rows ({active} 영업중) of {total} total"
         + (f", upserted {upserted}" if do_upsert else "")
+        + (f", geocoded {geocoded}" if do_geocode else "")
     )
     return 0
 
@@ -231,8 +322,23 @@ def cli() -> int:
     parser = argparse.ArgumentParser(description="동물병원 ETL")
     parser.add_argument("--pages", type=int, default=None, help="최대 페이지 수 (테스트용)")
     parser.add_argument("--upsert", action="store_true", help="DB upsert 활성화")
+    parser.add_argument(
+        "--seed", action="store_true",
+        help="data.go.kr 대신 정적 50건 시드 사용 (R6 fallback)",
+    )
+    parser.add_argument(
+        "--geocode", action="store_true",
+        help="좌표 결측 row 를 카카오 로컬 API 지오코딩으로 보정 (mock-first)",
+    )
     args = parser.parse_args()
-    return asyncio.run(main(max_pages=args.pages, do_upsert=args.upsert))
+    return asyncio.run(
+        main(
+            max_pages=args.pages,
+            do_upsert=args.upsert,
+            seed_only=args.seed,
+            do_geocode=args.geocode,
+        )
+    )
 
 
 if __name__ == "__main__":

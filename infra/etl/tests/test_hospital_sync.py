@@ -1,7 +1,15 @@
 """W3-v2 head-start: hospital ETL transform + EPSG:5174 → 4326 변환 단위 테스트."""
 from __future__ import annotations
 
-from infra.etl.hospital_sync import is_active, tm_to_wgs84, transform_row
+import asyncio
+
+from infra.etl.hospital_sync import (
+    enrich_with_geocoding,
+    is_active,
+    load_static_seed,
+    tm_to_wgs84,
+    transform_row,
+)
 
 
 def test_tm_to_wgs84_seoul_city_hall_close_enough() -> None:
@@ -70,3 +78,61 @@ def test_transform_row_partial_coordinates_returns_none() -> None:
     out = transform_row(raw)
     assert out["lat"] is None
     assert out["lng"] is None
+
+
+def test_load_static_seed_returns_50_seoul_rows() -> None:
+    rows = load_static_seed()
+    assert len(rows) == 50
+    assert {r["mgmt_no"] for r in rows}.__len__() == 50  # unique mgmt_no
+    for r in rows:
+        assert r["status"] == "영업/정상"
+        assert r["name"]
+        assert 37.4 < r["lat"] < 37.7
+        assert 126.7 < r["lng"] < 127.2
+        assert r["tm_x"] is None and r["tm_y"] is None
+
+
+class _StubGeocoder:
+    """주소 → 결정적 좌표 (테스트용)."""
+
+    def __init__(self, mapping: dict[str, tuple[float, float] | None]) -> None:
+        self._mapping = mapping
+        self.calls: list[str] = []
+
+    async def geocode_address(
+        self, road_addr: str
+    ) -> tuple[float, float] | None:
+        self.calls.append(road_addr)
+        return self._mapping.get(road_addr)
+
+
+def test_enrich_with_geocoding_fills_only_missing_coords() -> None:
+    rows: list[dict] = [
+        {"road_addr": "서울특별시 종로구 세종대로 1", "lat": None, "lng": None},
+        {"road_addr": "이미좌표있는병원", "lat": 37.50, "lng": 127.00},
+        {"road_addr": "", "lot_addr": "", "lat": None, "lng": None},
+    ]
+    geocoder = _StubGeocoder(
+        {
+            "서울특별시 종로구 세종대로 1": (37.5735, 126.9788),
+        }
+    )
+    enriched = asyncio.run(enrich_with_geocoding(rows, geocoder))
+    assert enriched == 1
+    assert rows[0]["lat"] == 37.5735
+    assert rows[0]["lng"] == 126.9788
+    # 이미 좌표가 있던 row 는 건드리지 않음 + geocoder 도 호출 안함.
+    assert rows[1]["lat"] == 37.50
+    assert "이미좌표있는병원" not in geocoder.calls
+    # 주소 없는 row 는 None 유지.
+    assert rows[2]["lat"] is None
+
+
+def test_enrich_with_geocoding_handles_geocoder_none_response() -> None:
+    rows: list[dict] = [
+        {"road_addr": "부산광역시 해운대구 1", "lat": None, "lng": None},
+    ]
+    geocoder = _StubGeocoder({"부산광역시 해운대구 1": None})
+    enriched = asyncio.run(enrich_with_geocoding(rows, geocoder))
+    assert enriched == 0
+    assert rows[0]["lat"] is None
