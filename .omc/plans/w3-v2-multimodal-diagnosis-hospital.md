@@ -27,7 +27,7 @@ W3-v2 종료(5.21) 시점에 **이미지 진단(피부·눈·귀·잇몸 4부위
   - `apps/api/app/integrations/storage/s3.py` — `boto3` 또는 `aiobotocore` 기반 presigned upload URL 발급 + multipart + content-type 검증. Mock factory(LocalStack 또는 in-memory).
   - 환경변수: `S3_BUCKET`, `S3_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`. 미설정 시 mock 자동 폴백.
   - `apps/api/app/api/v1/diagnose.py` — `POST /v1/diagnose/image`, `POST /v1/diagnose/audio`, `GET /v1/pets/{id}/diagnoses?limit=20`.
-  - 모델: `DiagnosisEvent(id, pet_id, modality enum('image','audio','timeseries'), s3_ref, top_results jsonb, action enum, confidence_top1 float, created_at)` + `HealthSnapshot.image_s3_ref`, `audio_s3_ref`, `inference_metadata` 컬럼 추가.
+  - 모델: `DiagnosisEvent(id, pet_id, modality enum('image','audio','timeseries'), s3_ref, top_results jsonb, action enum, confidence_top1 float, created_at)`. (HealthSnapshot 컬럼 추가는 5.7 정정 — W2 에 ORM 으로 존재하지 않아 사양에서 제외; 진단 데이터는 DiagnosisEvent 단일 테이블에 저장.)
   - Alembic `0005_multimodal_diagnosis` 마이그레이션.
   - 병원 매칭 업그레이드: `infra/etl/hospital_sync.py` 1줄 수정으로 data.go.kr 통합 인허가 OpenAPI 채택 + 카카오 로컬 API 지오코딩 fallback. `Hospital` PostGIS POINT 컬럼 + `ST_DWithin`. `GET /v1/hospitals/nearby?lat=&lng=&radius_m=&limit=&specialty=` (specialty 옵셔널).
 
@@ -58,7 +58,7 @@ W3-v2 종료(5.21) 시점에 **이미지 진단(피부·눈·귀·잇몸 4부위
 
 ### 1.3 Constraints
 
-- 2026-05-07 결정: Caretail 워치 통합 완전 제거. `HealthProvider`/`MockHealthProvider`/`HealthSnapshot` 코드 자산은 이미지/오디오 진단 데이터 저장용으로 재활용 (image_s3_ref/audio_s3_ref/inference_metadata 컬럼). `CARETAIL_*` 환경변수 및 폴링 워커는 삭제 대상.
+- 2026-05-07 결정: Caretail 워치 통합 완전 제거. `HealthProvider`/`MockHealthProvider`/`HealthSnapshot` 은 W2 에서 Pydantic 메모리 스키마로만 존재 (DB ORM 모델 아님) — `CARETAIL_*` 환경변수 및 폴링 워커는 삭제 대상. 진단 데이터 저장은 DiagnosisEvent 단일 테이블 (s3_ref + top_results jsonb) 로 일원화. (5.7 정정: 기존 plan v2 의 "HealthSnapshot 컬럼 재활용" 가정은 ORM 부재로 무효.)
 - 4–5인 팀 분담(백엔드 2 / 모바일 1 / AI·인프라 1 / 리드·PM 1). 5.17 일요일은 작업 가능, 5.20 수요일은 mypy/ruff/coverage 회복 데이로 신규 코드 지양.
 - **Day 7(5.21)** 은 freeze + 통합 + W4-v2 카드 분해 + 시연 시드 데이터 준비 전용. 신규 코드 금지.
 - 모든 진단 카드(이미지/오디오 결과)에 "AI 추정치, 수의사 상담 권장" 디스클레이머 의무 노출(spec 02 § 7, spec 05 § 10).
@@ -72,7 +72,7 @@ W3-v2 종료(5.21) 시점에 **이미지 진단(피부·눈·귀·잇몸 4부위
 
 | # | 기준 | 검증 방법 |
 |---|---|---|
-| AC1 | `alembic upgrade head` 실행 시 `diagnosis_event` 테이블 생성 + `health_snapshot.{image_s3_ref, audio_s3_ref, inference_metadata}` 컬럼 + `hospital.location`(PostGIS POINT) 컬럼 반영 | `psql -c "\d diagnosis_event"` `\d health_snapshot` `\d hospital` 출력 검증 |
+| AC1 | `alembic upgrade head` 실행 시 `diagnosis_event` 테이블 + `hospital.location`(PostGIS POINT) 컬럼 반영 | `psql -c "\d diagnosis_event"` `\d hospital` 출력 검증 (5.7 정정: health_snapshot 컬럼 요구 제거 — W2 ORM 부재) |
 | AC2 | `apps/ai-server` 컨테이너 부팅 후 `POST /infer/vision` (mock 모델) 에 224×224 RGB JPEG + `pet_meta` JSON 전송 시 200 + `{top_results: [...3건], action: 'observe'|'schedule'|'immediate', confidence_top1}` 반환, 5초 timeout 내 | `pytest apps/ai-server/tests/test_vision_infer.py::test_vision_smoke_mock` |
 | AC3 | MobileNetV3-Small 의 Kaggle dog skin diseases holdout(20% split) top-1 정확도 ≥ 70% **또는** ConvNeXt-Tiny fallback 으로 ≥ 70% 도달 (둘 중 하나 채택 결정 기록) | `apps/ai-server/scripts/eval_vision.py` 결과 표 + `docs/ai/vision-eval-w3.md` 첨부 |
 | AC4 | `POST /infer/audio` (mock) 에 5–10초 16kHz mono WAV/M4A + `pet_meta` 전송 시 200 + `{score: float ∈ [0,1], category: '정상'|'기침'|'이상호흡'|'꼬르륵'|'기타'}` 반환 | `pytest apps/ai-server/tests/test_audio_infer.py::test_audio_smoke_mock` |
@@ -117,7 +117,6 @@ W3-v2 종료(5.21) 시점에 **이미지 진단(피부·눈·귀·잇몸 4부위
 - [ ] `apps/api/app/integrations/storage/{mock,factory}.py` — in-memory mock(테스트용) + LocalStack 옵션. content-type 화이트리스트(`image/jpeg`, `image/png`, `audio/wav`, `audio/m4a`, `audio/mpeg`).
 - [ ] `apps/api/app/api/v1/uploads.py` 신규 — `POST /v1/uploads/presign?modality=image|audio` (AC10).
 - [ ] `apps/api/app/models/diagnosis_event.py` 신규: `DiagnosisEvent(id, pet_id FK, modality enum('image','audio','timeseries'), s3_ref, top_results jsonb, action enum('immediate','schedule','observe'), confidence_top1 float, created_at)`.
-- [ ] `apps/api/app/models/health_snapshot.py` (W2 모델) 에 `image_s3_ref str|None`, `audio_s3_ref str|None`, `inference_metadata jsonb|None` 컬럼 추가.
 - [ ] `apps/api/app/models/hospital.py` 에 `location: Geometry('POINT', srid=4326)` 컬럼 추가(geoalchemy2).
 - [ ] `alembic revision --autogenerate -m "0005_multimodal_diagnosis"` → 검증 → commit (AC1).
 - [ ] `apps/api/tests/test_uploads.py` — AC10 (LocalStack 또는 in-memory mock fixture).
@@ -410,7 +409,6 @@ apps/ai-server/
 apps/api/
   alembic/versions/0005_multimodal_diagnosis.py           [new]
   app/models/diagnosis_event.py                           [new]
-  app/models/health_snapshot.py                           [edit: image_s3_ref, audio_s3_ref, inference_metadata]
   app/models/hospital.py                                  [edit: location PostGIS POINT]
   app/integrations/storage/{__init__,s3,mock,factory}.py  [new]
   app/integrations/ai_server/{__init__,real,mock,factory}.py [new]
