@@ -9,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.validation.ConstraintViolationException;
+
 /**
  * 전역 예외 핸들러 — 도메인 예외를 RFC 9457 ProblemDetail JSON 으로 변환.
  *
@@ -44,6 +46,20 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exc) {
 		String detail = exc.getBindingResult().getFieldErrors().stream()
 			.map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+			.collect(Collectors.joining(", "));
+		ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+		pd.setProperty("code", "VALIDATION_FAILED");
+		return ResponseEntity.badRequest().body(pd);
+	}
+
+	/**
+	 * Method-level {@code @Min}/{@code @Max} 등 제약 위반 시 던져지는 예외
+	 * (controller 가 {@code @Validated} 일 때).
+	 */
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<ProblemDetail> handleConstraint(ConstraintViolationException exc) {
+		String detail = exc.getConstraintViolations().stream()
+			.map(v -> v.getPropertyPath() + ": " + v.getMessage())
 			.collect(Collectors.joining(", "));
 		ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
 		pd.setProperty("code", "VALIDATION_FAILED");

@@ -52,4 +52,61 @@ public interface HospitalRepository extends JpaRepository<Hospital, UUID> {
 		@Param("radiusM") int radiusM,
 		@Param("limit") int limit
 	);
+
+	/**
+	 * /v1/hospitals/nearby 응답에 필요한 컬럼만 명시 select — Python 라우트 contract 와 1:1.
+	 *
+	 * <p>{@code Object[]} 컬럼 순서: id(UUID), mgmt_no(String), name(String),
+	 * road_addr(String), tel(String), lat(double), lng(double), distance_m(double).
+	 *
+	 * <p>학습 포인트: native query 가 raw 컬럼을 던질 때 Spring Data 가 인터페이스 projection
+	 * 으로 자동 매핑 가능 — 단순 record 매핑은 이 방식이 표준.
+	 */
+	@Query(
+		value = """
+			SELECT
+				h.id AS id,
+				h.mgmt_no AS mgmt_no,
+				h.name AS name,
+				h.road_addr AS road_addr,
+				h.tel AS tel,
+				ST_Y(h.location::geometry) AS lat,
+				ST_X(h.location::geometry) AS lng,
+				ST_Distance(
+					h.location::geography,
+					ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+				) AS distance_m
+			FROM hospital h
+			WHERE h.location IS NOT NULL
+			  AND ST_DWithin(
+				  h.location::geography,
+				  ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+				  :radiusM
+			  )
+			ORDER BY distance_m ASC
+			LIMIT :limit
+			""",
+		nativeQuery = true
+	)
+	List<NearbyProjection> findNearby(
+		@Param("lat") double lat,
+		@Param("lng") double lng,
+		@Param("radiusM") int radiusM,
+		@Param("limit") int limit
+	);
+
+	/**
+	 * Spring Data JPA interface projection — getter 시그니처가 SELECT alias 와 일치하면
+	 * 런타임 proxy 가 자동 생성. native query 결과를 record/DTO 로 빠르게 매핑.
+	 */
+	interface NearbyProjection {
+		java.util.UUID getId();
+		String getMgmtNo();
+		String getName();
+		String getRoadAddr();
+		String getTel();
+		double getLat();
+		double getLng();
+		double getDistanceM();
+	}
 }
