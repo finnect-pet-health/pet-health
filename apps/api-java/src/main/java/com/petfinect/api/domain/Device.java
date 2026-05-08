@@ -27,11 +27,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Expo 푸시 디바이스 등록. expo_token UNIQUE. */
+/**
+ * Expo 푸시 디바이스 등록.
+ *
+ * <p>V8: expo_token 글로벌 UNIQUE → (user_id, expo_token) 복합 UNIQUE.
+ * Expo 토큰은 단말 재설치/재발급 시 다른 user 에게 재할당될 수 있어
+ * 글로벌 UNIQUE 면 INSERT 가 막힘.
+ */
 @Entity
 @Table(
 	name = "device",
-	uniqueConstraints = @UniqueConstraint(name = "uq_device_expo_token", columnNames = "expo_token"),
+	uniqueConstraints = @UniqueConstraint(
+		name = "uq_device_user_expo_token",
+		columnNames = {"user_id", "expo_token"}
+	),
 	indexes = @Index(name = "ix_device_user", columnList = "user_id")
 )
 @Getter

@@ -204,7 +204,8 @@ CREATE TABLE device (
     platform        device_platform NOT NULL,
     last_seen_at    TIMESTAMPTZ     NOT NULL DEFAULT now(),
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT now(),
-    CONSTRAINT uq_device_expo_token UNIQUE (expo_token)
+    -- V8: 글로벌 UNIQUE 대신 (user_id, expo_token) 복합 UNIQUE.
+    CONSTRAINT uq_device_user_expo_token UNIQUE (user_id, expo_token)
 );
 CREATE INDEX ix_device_user ON device (user_id);
 
