@@ -46,6 +46,7 @@ public class PetService {
 	@Transactional
 	public Pet create(
 		UUID familyId,
+		String name,
 		String breed,
 		LocalDate dob,
 		Double weight,
@@ -58,6 +59,7 @@ public class PetService {
 		Pet pet = Pet.builder()
 			.family(fam)
 			.species(PetSpecies.dog)
+			.name(name)
 			.breed(breed)
 			.dob(dob)
 			.weight(weight)

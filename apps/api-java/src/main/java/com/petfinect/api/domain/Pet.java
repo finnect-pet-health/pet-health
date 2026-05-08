@@ -1,10 +1,12 @@
 package com.petfinect.api.domain;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -59,6 +61,10 @@ public class Pet {
 	@Builder.Default
 	private PetSpecies species = PetSpecies.dog;
 
+	// V5: 펫 이름 (nullable — 점진 도입). 모바일은 미수신 시 무시.
+	@Column
+	private String name;
+
 	@Column
 	private String breed;
 
@@ -76,4 +82,9 @@ public class Pet {
 	@Column(nullable = false, columnDefinition = "jsonb")
 	@Builder.Default
 	private List<String> conditions = new ArrayList<>();
+
+	// V5: created_at — User / DiagnosisEvent 와 동일 패턴 (@CreationTimestamp).
+	@CreationTimestamp
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private OffsetDateTime createdAt;
 }

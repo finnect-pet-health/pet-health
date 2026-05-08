@@ -311,6 +311,7 @@ export interface components {
             name: string;
         };
         PetCreateRequest: {
+            name?: string;
             breed?: string;
             /** Format: date */
             dob?: string;
@@ -324,6 +325,7 @@ export interface components {
             id: string;
             /** Format: uuid */
             family_id: string;
+            name: string;
             species: string;
             breed: string;
             /** Format: date */
@@ -332,6 +334,8 @@ export interface components {
             weight: number;
             neutered: boolean;
             conditions: string[];
+            /** Format: date-time */
+            created_at: string;
         };
         InviteRequest: {
             /** Format: int32 */

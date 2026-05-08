@@ -666,6 +666,11 @@
       },
       "PetCreateRequest" : {
         "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
           "breed" : {
             "type" : "string",
             "maxLength" : 50,
@@ -700,6 +705,9 @@
             "type" : "string",
             "format" : "uuid"
           },
+          "name" : {
+            "type" : "string"
+          },
           "species" : {
             "type" : "string"
           },
@@ -722,9 +730,13 @@
             "items" : {
               "type" : "string"
             }
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         },
-        "required" : [ "breed", "conditions", "dob", "family_id", "id", "neutered", "species", "weight" ]
+        "required" : [ "breed", "conditions", "created_at", "dob", "family_id", "id", "name", "neutered", "species", "weight" ]
       },
       "InviteRequest" : {
         "properties" : {

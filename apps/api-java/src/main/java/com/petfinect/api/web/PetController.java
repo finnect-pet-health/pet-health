@@ -57,6 +57,7 @@ public class PetController {
 		familyAccess.requireOwner(fid, principal.claims());
 		Pet pet = petService.create(
 			fid,
+			req.name(),
 			req.breed(),
 			req.dob(),
 			req.weight(),
@@ -90,12 +91,14 @@ public class PetController {
 		return new PetResponse(
 			pet.getId(),
 			pet.getFamily().getId(),
+			pet.getName(),
 			pet.getSpecies().name(),
 			pet.getBreed(),
 			pet.getDob(),
 			pet.getWeight(),
 			Boolean.TRUE.equals(pet.getNeutered()),
-			pet.getConditions() == null ? List.of() : List.copyOf(pet.getConditions())
+			pet.getConditions() == null ? List.of() : List.copyOf(pet.getConditions()),
+			pet.getCreatedAt()
 		);
 	}
 

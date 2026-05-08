@@ -74,6 +74,7 @@ class FamilyAndPetFlowIT {
 			"/v1/families/" + familyId + "/pets",
 			HttpMethod.POST,
 			authJson(ownerAccess2, Map.of(
+				"name", "초코",
 				"breed", "포메라니안",
 				"weight", 4.5,
 				"neutered", true,
@@ -83,9 +84,11 @@ class FamilyAndPetFlowIT {
 		);
 		assertThat(petResp.getStatusCode().value()).isEqualTo(200);
 		String petId = (String) petResp.getBody().get("id");
+		assertThat(petResp.getBody().get("name")).isEqualTo("초코");
 		assertThat(petResp.getBody().get("breed")).isEqualTo("포메라니안");
 		assertThat(petResp.getBody().get("species")).isEqualTo("dog");
 		assertThat((List<String>) petResp.getBody().get("conditions")).contains("아토피");
+		assertThat(petResp.getBody().get("created_at")).isNotNull();
 
 		// === 4) 초대 코드 발급 ===
 		ResponseEntity<Map> inviteResp = http.exchange(
