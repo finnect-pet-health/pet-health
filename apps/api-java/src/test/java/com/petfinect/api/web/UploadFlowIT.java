@@ -58,14 +58,14 @@ class UploadFlowIT {
 		ResponseEntity<Map> resp = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "image", "contentType", "image/jpeg")),
+			authJson(access, Map.of("modality", "image", "content_type", "image/jpeg")),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
 		Map<String, Object> body = resp.getBody();
 		String key = (String) body.get("key");
 		String url = (String) body.get("url");
-		int ttl = ((Number) body.get("ttlS")).intValue();
+		int ttl = ((Number) body.get("ttl_s")).intValue();
 
 		assertThat(key).matches("^uploads/image/[0-9a-f-]{36}/[0-9a-f-]{36}\\.jpg$");
 		assertThat(url).startsWith("mock-s3://");
@@ -82,7 +82,7 @@ class UploadFlowIT {
 		ResponseEntity<Map> resp = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "audio", "contentType", "audio/wav")),
+			authJson(access, Map.of("modality", "audio", "content_type", "audio/wav")),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
@@ -96,7 +96,7 @@ class UploadFlowIT {
 		ResponseEntity<String> resp = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "image", "contentType", "application/pdf")),
+			authJson(access, Map.of("modality", "image", "content_type", "application/pdf")),
 			String.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(400);
@@ -111,7 +111,7 @@ class UploadFlowIT {
 		ResponseEntity<String> resp = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "audio", "contentType", "image/jpeg")),
+			authJson(access, Map.of("modality", "audio", "content_type", "image/jpeg")),
 			String.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(400);
@@ -124,7 +124,7 @@ class UploadFlowIT {
 		ResponseEntity<String> resp = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			new HttpEntity<>(Map.of("modality", "image", "contentType", "image/jpeg"), h),
+			new HttpEntity<>(Map.of("modality", "image", "content_type", "image/jpeg"), h),
 			String.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(401);
@@ -139,7 +139,7 @@ class UploadFlowIT {
 		ResponseEntity<Map> presign = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "image", "contentType", "image/png")),
+			authJson(access, Map.of("modality", "image", "content_type", "image/png")),
 			Map.class
 		);
 		String key = (String) presign.getBody().get("key");
@@ -203,7 +203,7 @@ class UploadFlowIT {
 	private String login(String mockCode) {
 		ResponseEntity<Map> resp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", mockCode, "redirectUri", "http://localhost"),
+			Map.of("auth_code", mockCode, "redirect_uri", "http://localhost"),
 			Map.class
 		);
 		return (String) resp.getBody().get("access");

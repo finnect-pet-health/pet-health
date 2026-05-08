@@ -52,7 +52,9 @@ public class SecurityConfig {
 					"/healthz",
 					"/v1/auth/**",
 					"/v1/hospitals/**",
+					"/v3/api-docs",
 					"/v3/api-docs/**",
+					"/v3/api-docs.yaml",
 					"/swagger-ui/**",
 					"/swagger-ui.html"
 				).permitAll()

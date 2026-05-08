@@ -67,19 +67,19 @@ class DiagnoseFlowIT {
 		ResponseEntity<Map> resp = http.exchange(
 			"/v1/diagnose/image",
 			HttpMethod.POST,
-			authJson(ctx.access, Map.of("petId", ctx.petId, "imageS3Key", key, "region", "skin")),
+			authJson(ctx.access, Map.of("pet_id", ctx.petId, "image_s3_key", key, "region", "skin")),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
 		Map<String, Object> body = resp.getBody();
 		assertThat(body.get("modality")).isEqualTo("image");
-		assertThat(body.get("s3Ref")).isEqualTo(key);
-		assertThat(body.get("petId")).isEqualTo(ctx.petId);
+		assertThat(body.get("s3_ref")).isEqualTo(key);
+		assertThat(body.get("pet_id")).isEqualTo(ctx.petId);
 		assertThat(body.get("action")).isIn("immediate", "schedule", "observe");
-		double conf = ((Number) body.get("confidenceTop1")).doubleValue();
+		double conf = ((Number) body.get("confidence_top1")).doubleValue();
 		assertThat(conf).isBetween(0.0, 1.0);
 
-		List<Map<String, Object>> top = (List<Map<String, Object>>) body.get("topResults");
+		List<Map<String, Object>> top = (List<Map<String, Object>>) body.get("top_results");
 		assertThat(top).hasSize(3);
 		Set<String> labels = top.stream().map(m -> (String) m.get("label")).collect(java.util.stream.Collectors.toSet());
 		assertThat(labels).containsAnyOf("skin_redness", "skin_normal", "skin_alopecia");
@@ -94,15 +94,15 @@ class DiagnoseFlowIT {
 		ResponseEntity<Map> resp = http.exchange(
 			"/v1/diagnose/audio",
 			HttpMethod.POST,
-			authJson(ctx.access, Map.of("petId", ctx.petId, "audioS3Key", key)),
+			authJson(ctx.access, Map.of("pet_id", ctx.petId, "audio_s3_key", key)),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
 		Map<String, Object> body = resp.getBody();
 		assertThat(body.get("modality")).isEqualTo("audio");
-		assertThat(body.get("s3Ref")).isEqualTo(key);
+		assertThat(body.get("s3_ref")).isEqualTo(key);
 
-		List<Map<String, Object>> top = (List<Map<String, Object>>) body.get("topResults");
+		List<Map<String, Object>> top = (List<Map<String, Object>>) body.get("top_results");
 		assertThat(top).hasSize(1);
 		assertThat((String) top.get(0).get("category"))
 			.isIn("정상", "기침", "이상호흡", "꼬르륵", "기타");
@@ -119,7 +119,7 @@ class DiagnoseFlowIT {
 			ResponseEntity<Map> resp = http.exchange(
 				"/v1/diagnose/image",
 				HttpMethod.POST,
-				authJson(ctx.access, Map.of("petId", ctx.petId, "imageS3Key", key, "region", "eye")),
+				authJson(ctx.access, Map.of("pet_id", ctx.petId, "image_s3_key", key, "region", "eye")),
 				Map.class
 			);
 			assertThat(resp.getStatusCode().value()).isEqualTo(200);
@@ -135,8 +135,8 @@ class DiagnoseFlowIT {
 		List<Map<String, Object>> rows = listResp.getBody();
 		assertThat(rows).hasSize(2);
 		// created_at DESC — 첫 행이 최신.
-		String first = (String) rows.get(0).get("createdAt");
-		String second = (String) rows.get(1).get("createdAt");
+		String first = (String) rows.get(0).get("created_at");
+		String second = (String) rows.get(1).get("created_at");
 		assertThat(first.compareTo(second)).isGreaterThanOrEqualTo(0);
 	}
 
@@ -165,8 +165,8 @@ class DiagnoseFlowIT {
 			"/v1/diagnose/image",
 			HttpMethod.POST,
 			authJson(ctx.access, Map.of(
-				"petId", "11111111-2222-3333-4444-555555555555",
-				"imageS3Key", key,
+				"pet_id", "11111111-2222-3333-4444-555555555555",
+				"image_s3_key", key,
 				"region", "skin"
 			)),
 			String.class
@@ -183,8 +183,8 @@ class DiagnoseFlowIT {
 			"/v1/diagnose/image",
 			HttpMethod.POST,
 			authJson(ctx.access, Map.of(
-				"petId", "not-a-uuid",
-				"imageS3Key", key,
+				"pet_id", "not-a-uuid",
+				"image_s3_key", key,
 				"region", "skin"
 			)),
 			String.class
@@ -200,8 +200,8 @@ class DiagnoseFlowIT {
 			"/v1/diagnose/image",
 			HttpMethod.POST,
 			new HttpEntity<>(Map.of(
-				"petId", "11111111-2222-3333-4444-555555555555",
-				"imageS3Key", "x",
+				"pet_id", "11111111-2222-3333-4444-555555555555",
+				"image_s3_key", "x",
 				"region", "skin"
 			), h),
 			String.class
@@ -246,7 +246,7 @@ class DiagnoseFlowIT {
 	private String login(String mockCode) {
 		ResponseEntity<Map> resp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", mockCode, "redirectUri", "http://localhost"),
+			Map.of("auth_code", mockCode, "redirect_uri", "http://localhost"),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
@@ -258,7 +258,7 @@ class DiagnoseFlowIT {
 		ResponseEntity<Map> presign = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "image", "contentType", "image/jpeg")),
+			authJson(access, Map.of("modality", "image", "content_type", "image/jpeg")),
 			Map.class
 		);
 		assertThat(presign.getStatusCode().value()).isEqualTo(200);
@@ -282,7 +282,7 @@ class DiagnoseFlowIT {
 		ResponseEntity<Map> presign = http.exchange(
 			"/v1/uploads/presign",
 			HttpMethod.POST,
-			authJson(access, Map.of("modality", "audio", "contentType", "audio/wav")),
+			authJson(access, Map.of("modality", "audio", "content_type", "audio/wav")),
 			Map.class
 		);
 		assertThat(presign.getStatusCode().value()).isEqualTo(200);

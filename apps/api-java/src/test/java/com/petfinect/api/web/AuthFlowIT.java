@@ -59,7 +59,7 @@ class AuthFlowIT {
 		// 1) Kakao 로그인 — 토큰 발급
 		ResponseEntity<Map> loginResp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", "mock-user-1", "redirectUri", "http://localhost/cb"),
+			Map.of("auth_code", "mock-user-1", "redirect_uri", "http://localhost/cb"),
 			Map.class
 		);
 		assertThat(loginResp.getStatusCode().value()).isEqualTo(200);
@@ -120,7 +120,7 @@ class AuthFlowIT {
 	void kakaoLogin_invalidCode_returns400() {
 		ResponseEntity<String> resp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", "garbage", "redirectUri", "http://localhost/cb"),
+			Map.of("auth_code", "garbage", "redirect_uri", "http://localhost/cb"),
 			String.class
 		);
 
@@ -146,7 +146,7 @@ class AuthFlowIT {
 	void kakaoLogin_validation_emptyCode_returns400() {
 		ResponseEntity<String> resp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", "", "redirectUri", "http://localhost"),
+			Map.of("auth_code", "", "redirect_uri", "http://localhost"),
 			String.class
 		);
 
@@ -160,12 +160,12 @@ class AuthFlowIT {
 		// 두 번째 호출 → 같은 사용자 (kakao_id 로 upsert)
 		ResponseEntity<Map> first = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", "mock-user-99", "redirectUri", "http://localhost"),
+			Map.of("auth_code", "mock-user-99", "redirect_uri", "http://localhost"),
 			Map.class
 		);
 		ResponseEntity<Map> second = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", "mock-user-99", "redirectUri", "http://localhost"),
+			Map.of("auth_code", "mock-user-99", "redirect_uri", "http://localhost"),
 			Map.class
 		);
 

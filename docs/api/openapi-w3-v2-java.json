@@ -1,0 +1,1001 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "PetFinect API",
+    "description" : "PetFinect cloud API — Spring Boot 4 (Java 21) port. Contract identical to FastAPI baseline (apps/api).",
+    "license" : {
+      "name" : "Internal",
+      "url" : "https://petfinect.example/internal"
+    },
+    "version" : "0.1.0"
+  },
+  "security" : [ {
+    "bearer-jwt" : [ ]
+  } ],
+  "paths" : {
+    "/v1/uploads/raw" : {
+      "post" : {
+        "tags" : [ "upload-controller" ],
+        "operationId" : "raw",
+        "parameters" : [ {
+          "name" : "key",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Content-Type",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RawUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/uploads/presign" : {
+      "post" : {
+        "tags" : [ "upload-controller" ],
+        "operationId" : "presign",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PresignRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PresignResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/families" : {
+      "get" : {
+        "tags" : [ "family-controller" ],
+        "operationId" : "list",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/FamilySummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "family-controller" ],
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FamilyCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateFamilyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/families/{family_id}/pets" : {
+      "get" : {
+        "tags" : [ "pet-controller" ],
+        "operationId" : "listInFamily",
+        "parameters" : [ {
+          "name" : "family_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PetResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "pet-controller" ],
+        "operationId" : "createInFamily",
+        "parameters" : [ {
+          "name" : "family_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PetCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/families/{family_id}/invite" : {
+      "post" : {
+        "tags" : [ "family-controller" ],
+        "operationId" : "invite",
+        "parameters" : [ {
+          "name" : "family_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/InviteRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/families/join" : {
+      "post" : {
+        "tags" : [ "family-controller" ],
+        "operationId" : "join",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/JoinRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JoinResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/diagnose/image" : {
+      "post" : {
+        "tags" : [ "diagnose-controller" ],
+        "operationId" : "diagnoseImage",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiagnoseImageRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosisResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/diagnose/audio" : {
+      "post" : {
+        "tags" : [ "diagnose-controller" ],
+        "operationId" : "diagnoseAudio",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiagnoseAudioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosisResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/refresh" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "refresh",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenPair"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "logout",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/v1/auth/kakao" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "kakaoLogin",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/KakaoLoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KakaoLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pets/{pet_id}" : {
+      "get" : {
+        "tags" : [ "pet-controller" ],
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "pet_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pets/{pet_id}/diagnoses" : {
+      "get" : {
+        "tags" : [ "diagnose-controller" ],
+        "operationId" : "listForPet",
+        "parameters" : [ {
+          "name" : "pet_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20,
+            "maximum" : 100,
+            "minimum" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/DiagnosisResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me" : {
+      "get" : {
+        "tags" : [ "me-controller" ],
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/hospitals/nearby" : {
+      "get" : {
+        "tags" : [ "hospital-controller" ],
+        "operationId" : "nearby",
+        "parameters" : [ {
+          "name" : "lat",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 90,
+            "minimum" : -90
+          }
+        }, {
+          "name" : "lng",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 180,
+            "minimum" : -180
+          }
+        }, {
+          "name" : "radius_m",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 3000,
+            "maximum" : 50000,
+            "minimum" : 1
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 3,
+            "maximum" : 50,
+            "minimum" : 1
+          }
+        }, {
+          "name" : "specialty",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/HospitalNearbyResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/families/{family_id}/members" : {
+      "get" : {
+        "tags" : [ "family-controller" ],
+        "operationId" : "members",
+        "parameters" : [ {
+          "name" : "family_id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MemberDetailResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz" : {
+      "get" : {
+        "tags" : [ "health-controller" ],
+        "operationId" : "healthz",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "RawUploadResponse" : {
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "bytes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "bytes", "key" ]
+      },
+      "PresignRequest" : {
+        "properties" : {
+          "modality" : {
+            "type" : "string",
+            "enum" : [ "image", "audio" ]
+          },
+          "content_type" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "content_type", "modality" ]
+      },
+      "PresignResponse" : {
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "ttl_s" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "key", "ttl_s", "url" ]
+      },
+      "FamilyCreateRequest" : {
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "CreateFamilyResponse" : {
+        "properties" : {
+          "family" : {
+            "$ref" : "#/components/schemas/FamilyDetail"
+          },
+          "member" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        },
+        "required" : [ "family", "member" ]
+      },
+      "FamilyDetail" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name" ]
+      },
+      "PetCreateRequest" : {
+        "properties" : {
+          "breed" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "dob" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "neutered" : {
+            "type" : "boolean"
+          },
+          "conditions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "PetResponse" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "family_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "species" : {
+            "type" : "string"
+          },
+          "breed" : {
+            "type" : "string"
+          },
+          "dob" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "neutered" : {
+            "type" : "boolean"
+          },
+          "conditions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "required" : [ "breed", "conditions", "dob", "family_id", "id", "neutered", "species", "weight" ]
+      },
+      "InviteRequest" : {
+        "properties" : {
+          "ttl_hours" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 720,
+            "minimum" : 1
+          }
+        }
+      },
+      "InviteResponse" : {
+        "properties" : {
+          "invite_code" : {
+            "type" : "string"
+          },
+          "expires_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "expires_at", "invite_code" ]
+      },
+      "JoinRequest" : {
+        "properties" : {
+          "invite_code" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "invite_code" ]
+      },
+      "JoinResponse" : {
+        "properties" : {
+          "family" : {
+            "$ref" : "#/components/schemas/FamilyDetail"
+          },
+          "role" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "family", "role" ]
+      },
+      "DiagnoseImageRequest" : {
+        "properties" : {
+          "pet_id" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "image_s3_key" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "region" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "image_s3_key", "pet_id" ]
+      },
+      "DiagnosisResponse" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "pet_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "modality" : {
+            "type" : "string"
+          },
+          "s3_ref" : {
+            "type" : "string"
+          },
+          "top_results" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "additionalProperties" : true
+            }
+          },
+          "action" : {
+            "type" : "string"
+          },
+          "confidence_top1" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "action", "confidence_top1", "created_at", "id", "modality", "pet_id", "s3_ref", "top_results" ]
+      },
+      "DiagnoseAudioRequest" : {
+        "properties" : {
+          "pet_id" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "audio_s3_key" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "audio_s3_key", "pet_id" ]
+      },
+      "RefreshRequest" : {
+        "properties" : {
+          "refresh" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "refresh" ]
+      },
+      "TokenPair" : {
+        "properties" : {
+          "access" : {
+            "type" : "string"
+          },
+          "refresh" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "access", "refresh" ]
+      },
+      "KakaoLoginRequest" : {
+        "properties" : {
+          "auth_code" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "redirect_uri" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "auth_code", "redirect_uri" ]
+      },
+      "KakaoLoginResponse" : {
+        "properties" : {
+          "access" : {
+            "type" : "string"
+          },
+          "refresh" : {
+            "type" : "string"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserSummary"
+          }
+        },
+        "required" : [ "access", "refresh", "user" ]
+      },
+      "UserSummary" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "profile_image" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name", "profile_image" ]
+      },
+      "FamilySummary" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "member_count" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "id", "member_count", "name", "role" ]
+      },
+      "MeResponse" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "profile_image" : {
+            "type" : "string"
+          },
+          "families" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FamilySummary"
+            }
+          }
+        },
+        "required" : [ "families", "id", "name", "profile_image" ]
+      },
+      "HospitalNearbyResponse" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "mgmt_no" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "road_addr" : {
+            "type" : "string"
+          },
+          "tel" : {
+            "type" : "string"
+          },
+          "lat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lng" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "distance_m" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        },
+        "required" : [ "distance_m", "id", "lat", "lng", "mgmt_no", "name", "road_addr", "tel" ]
+      },
+      "MemberDetailResponse" : {
+        "properties" : {
+          "user_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
+          },
+          "joined_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "joined_at", "name", "role", "user_id" ]
+      }
+    },
+    "securitySchemes" : {
+      "bearer-jwt" : {
+        "type" : "http",
+        "description" : "JWT access token issued by /v1/auth/kakao or /v1/auth/refresh",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

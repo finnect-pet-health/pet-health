@@ -91,11 +91,11 @@ class FamilyAndPetFlowIT {
 		ResponseEntity<Map> inviteResp = http.exchange(
 			"/v1/families/" + familyId + "/invite",
 			HttpMethod.POST,
-			authJson(ownerAccess2, Map.of("ttlHours", 24)),
+			authJson(ownerAccess2, Map.of("ttl_hours", 24)),
 			Map.class
 		);
 		assertThat(inviteResp.getStatusCode().value()).isEqualTo(200);
-		String inviteCode = (String) inviteResp.getBody().get("inviteCode");
+		String inviteCode = (String) inviteResp.getBody().get("invite_code");
 		assertThat(inviteCode).hasSize(8);
 
 		// === 5) Member 로그인 + 가입 ===
@@ -104,7 +104,7 @@ class FamilyAndPetFlowIT {
 		ResponseEntity<Map> joinResp = http.exchange(
 			"/v1/families/join",
 			HttpMethod.POST,
-			authJson(memberAccess, Map.of("inviteCode", inviteCode)),
+			authJson(memberAccess, Map.of("invite_code", inviteCode)),
 			Map.class
 		);
 		assertThat(joinResp.getStatusCode().value()).isEqualTo(200);
@@ -143,7 +143,7 @@ class FamilyAndPetFlowIT {
 		ResponseEntity<String> inviteForbidden = http.exchange(
 			"/v1/families/" + familyId + "/invite",
 			HttpMethod.POST,
-			authJson(memberAccess, Map.of("ttlHours", 24)),
+			authJson(memberAccess, Map.of("ttl_hours", 24)),
 			String.class
 		);
 		assertThat(inviteForbidden.getStatusCode().value()).isEqualTo(403);
@@ -183,7 +183,7 @@ class FamilyAndPetFlowIT {
 		ResponseEntity<String> resp = http.exchange(
 			"/v1/families/join",
 			HttpMethod.POST,
-			authJson(access, Map.of("inviteCode", "NOSUCHC0")),
+			authJson(access, Map.of("invite_code", "NOSUCHC0")),
 			String.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(404);
@@ -205,15 +205,15 @@ class FamilyAndPetFlowIT {
 		ResponseEntity<Map> invite = http.exchange(
 			"/v1/families/" + familyId + "/invite",
 			HttpMethod.POST,
-			authJson(access, Map.of("ttlHours", 24)),
+			authJson(access, Map.of("ttl_hours", 24)),
 			Map.class
 		);
-		String code = (String) invite.getBody().get("inviteCode");
+		String code = (String) invite.getBody().get("invite_code");
 
 		ResponseEntity<String> joinAgain = http.exchange(
 			"/v1/families/join",
 			HttpMethod.POST,
-			authJson(access, Map.of("inviteCode", code)),
+			authJson(access, Map.of("invite_code", code)),
 			String.class
 		);
 		assertThat(joinAgain.getStatusCode().value()).isEqualTo(409);
@@ -244,7 +244,7 @@ class FamilyAndPetFlowIT {
 	private String login(String mockCode) {
 		ResponseEntity<Map> resp = http.postForEntity(
 			"/v1/auth/kakao",
-			Map.of("authCode", mockCode, "redirectUri", "http://localhost"),
+			Map.of("auth_code", mockCode, "redirect_uri", "http://localhost"),
 			Map.class
 		);
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);

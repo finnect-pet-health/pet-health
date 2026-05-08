@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# OpenAPI 스냅샷 우선순위: 최신 W3-v2 → W2 → W1.
+# OpenAPI 스냅샷 우선순위:
+#   1. apps/api-java (Spring Boot 4 / springdoc) — Phase 9 이후 기본
+#   2. apps/api (FastAPI) — Java 백엔드가 export 되기 전 fallback
+#   3. 구버전 W2-v2 → W1
 SCHEMA_FILE=""
 for candidate in \
+  ../../docs/api/openapi-w3-v2-java.json \
   ../../docs/api/openapi-w3-v2.json \
   ../../docs/api/openapi-w2-v2.json \
   ../../docs/api/openapi-w1.json; do

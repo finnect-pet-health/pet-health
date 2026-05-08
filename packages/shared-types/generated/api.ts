@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/v1/auth/kakao": {
+    "/v1/uploads/raw": {
         parameters: {
             query?: never;
             header?: never;
@@ -13,334 +13,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Kakao Login */
-        post: operations["kakao_login_v1_auth_kakao_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Refresh Token */
-        post: operations["refresh_token_v1_auth_refresh_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Logout
-         * @description Idempotent logout — revoke refresh token if it exists; otherwise no-op.
-         */
-        post: operations["logout_v1_auth_logout_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Me */
-        get: operations["me_v1_me_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/families": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Families */
-        get: operations["list_families_v1_families_get"];
-        put?: never;
-        /** Create Family */
-        post: operations["create_family_v1_families_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/families/{family_id}/invite": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Issue Family Invite */
-        post: operations["issue_family_invite_v1_families__family_id__invite_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/families/join": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Join Family */
-        post: operations["join_family_v1_families_join_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/families/{family_id}/members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Members */
-        get: operations["get_members_v1_families__family_id__members_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/families/{family_id}/pets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Family Pets Route */
-        get: operations["list_family_pets_route_v1_families__family_id__pets_get"];
-        put?: never;
-        /** Create Family Pet */
-        post: operations["create_family_pet_v1_families__family_id__pets_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/pets/{pet_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Pet */
-        get: operations["get_pet_v1_pets__pet_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/pets/{pet_id}/diagnoses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Diagnoses */
-        get: operations["list_diagnoses_v1_pets__pet_id__diagnoses_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/pets/{pet_id}/health/snapshots": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Snapshots */
-        get: operations["list_snapshots_v1_pets__pet_id__health_snapshots_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/pets/{pet_id}/health/sync": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Sync Health
-         * @description 케어테일 폴링 강제 트리거. RQ 워커에 enqueue.
-         */
-        post: operations["sync_health_v1_pets__pet_id__health_sync_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/hospitals/nearby": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Hospitals Nearby
-         * @description 현재 위치 (lat, lng) 기준 PostGIS `ST_DWithin` + 거리 ASC 정렬.
-         *
-         *     `specialty` 는 W3-v2 에서 무시 (W4-v2 triage 에서 활용 예정).
-         *     좌표 결측 row (location IS NULL) 는 ST_DWithin 자연 제외.
-         */
-        get: operations["hospitals_nearby_v1_hospitals_nearby_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/pets/{pet_id}/budget": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Budget */
-        get: operations["get_budget_v1_pets__pet_id__budget_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/finance/savings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Savings
-         * @description 월 적금 권장 금액에 맞는 외부 적금 상품 추천.
-         */
-        get: operations["list_savings_v1_finance_savings_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/finance/mock-enroll": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Mock Enroll
-         * @description PoC 시연용 가짜 적금 가입.
-         */
-        post: operations["mock_enroll_v1_finance_mock_enroll_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/donations/campaigns": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Campaigns */
-        get: operations["list_campaigns_v1_donations_campaigns_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/donations/redirect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Track And Redirect */
-        post: operations["track_and_redirect_v1_donations_redirect_post"];
+        post: operations["raw"];
         delete?: never;
         options?: never;
         head?: never;
@@ -356,15 +29,46 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Presign Upload */
-        post: operations["presign_upload_v1_uploads_presign_post"];
+        post: operations["presign"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/uploads/raw": {
+    "/v1/families": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/families/{family_id}/pets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInFamily"];
+        put?: never;
+        post: operations["createInFamily"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/families/{family_id}/invite": {
         parameters: {
             query?: never;
             header?: never;
@@ -373,14 +77,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Raw Upload
-         * @description Dev-only mock storage 직업로드 — `mock-s3://` URL 으로부터의 forward 대상.
-         *
-         *     실 운영(`app_env=='production'`)에서는 404 — presigned URL 흐름만 사용.
-         *     content-type 화이트리스트 적용 (image/audio 양쪽 통합).
-         */
-        post: operations["raw_upload_v1_uploads_raw_post"];
+        post: operations["invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/families/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["join"];
         delete?: never;
         options?: never;
         head?: never;
@@ -396,8 +109,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Diagnose Image Route */
-        post: operations["diagnose_image_route_v1_diagnose_image_post"];
+        post: operations["diagnoseImage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -413,8 +125,135 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Diagnose Audio Route */
-        post: operations["diagnose_audio_route_v1_diagnose_audio_post"];
+        post: operations["diagnoseAudio"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/kakao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["kakaoLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pets/{pet_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pets/{pet_id}/diagnoses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listForPet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/hospitals/nearby": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["nearby"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/families/{family_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["members"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -428,8 +267,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Healthz */
-        get: operations["healthz_healthz_get"];
+        get: operations["healthz"];
         put?: never;
         post?: never;
         delete?: never;
@@ -442,276 +280,158 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** CreateFamilyOut */
-        CreateFamilyOut: {
-            family: components["schemas"]["FamilyDetailOut"];
-            /** Member */
+        RawUploadResponse: {
+            key: string;
+            /** Format: int32 */
+            bytes: number;
+        };
+        PresignRequest: {
+            /** @enum {string} */
+            modality: "image" | "audio";
+            content_type: string;
+        };
+        PresignResponse: {
+            key: string;
+            url: string;
+            /** Format: int32 */
+            ttl_s: number;
+        };
+        FamilyCreateRequest: {
+            name: string;
+        };
+        CreateFamilyResponse: {
+            family: components["schemas"]["FamilyDetail"];
             member: {
-                [key: string]: unknown;
+                [key: string]: string;
             };
         };
-        /** DiagnoseAudioIn */
-        DiagnoseAudioIn: {
-            /** Pet Id */
-            pet_id: string;
-            /** Audio S3 Key */
-            audio_s3_key: string;
-        };
-        /** DiagnoseImageIn */
-        DiagnoseImageIn: {
-            /** Pet Id */
-            pet_id: string;
-            /** Image S3 Key */
-            image_s3_key: string;
-            /**
-             * Region
-             * @default skin
-             * @enum {string}
-             */
-            region: "skin" | "eye" | "ear" | "gum";
-        };
-        /** DiagnosisOut */
-        DiagnosisOut: {
-            /** Id */
+        FamilyDetail: {
+            /** Format: uuid */
             id: string;
-            /** Pet Id */
+            name: string;
+        };
+        PetCreateRequest: {
+            breed?: string;
+            /** Format: date */
+            dob?: string;
+            /** Format: double */
+            weight?: number;
+            neutered?: boolean;
+            conditions?: string[];
+        };
+        PetResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            family_id: string;
+            species: string;
+            breed: string;
+            /** Format: date */
+            dob: string;
+            /** Format: double */
+            weight: number;
+            neutered: boolean;
+            conditions: string[];
+        };
+        InviteRequest: {
+            /** Format: int32 */
+            ttl_hours?: number;
+        };
+        InviteResponse: {
+            invite_code: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        JoinRequest: {
+            invite_code: string;
+        };
+        JoinResponse: {
+            family: components["schemas"]["FamilyDetail"];
+            role: string;
+        };
+        DiagnoseImageRequest: {
             pet_id: string;
-            /** Modality */
+            image_s3_key: string;
+            region?: string;
+        };
+        DiagnosisResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            pet_id: string;
             modality: string;
-            /** S3 Ref */
             s3_ref: string;
-            /** Top Results */
             top_results: {
                 [key: string]: unknown;
             }[];
-            /** Action */
             action: string;
-            /** Confidence Top1 */
+            /** Format: double */
             confidence_top1: number;
-            /**
-             * Created At
-             * Format: date-time
-             */
+            /** Format: date-time */
             created_at: string;
         };
-        /** FamilyCreateIn */
-        FamilyCreateIn: {
-            /** Name */
-            name: string;
+        DiagnoseAudioRequest: {
+            pet_id: string;
+            audio_s3_key: string;
         };
-        /** FamilyDetailOut */
-        FamilyDetailOut: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
+        RefreshRequest: {
+            refresh: string;
         };
-        /** FamilyListItemOut */
-        FamilyListItemOut: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
-            /** Role */
-            role: string;
-            /** Member Count */
-            member_count: number;
+        TokenPair: {
+            access: string;
+            refresh: string;
         };
-        /** FamilyOut */
-        FamilyOut: {
-            /** Id */
-            id: string;
-            /** Name */
-            name: string;
-            /** Role */
-            role: string;
-            /** Member Count */
-            member_count: number;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** HospitalNearby */
-        HospitalNearby: {
-            /** Id */
-            id: string;
-            /** Mgmt No */
-            mgmt_no: string;
-            /** Name */
-            name: string;
-            /** Road Addr */
-            road_addr: string;
-            /** Tel */
-            tel: string;
-            /** Lat */
-            lat: number;
-            /** Lng */
-            lng: number;
-            /** Distance M */
-            distance_m: number;
-        };
-        /** InviteIn */
-        InviteIn: {
-            /**
-             * Ttl Hours
-             * @default 72
-             */
-            ttl_hours: number;
-        };
-        /** InviteOut */
-        InviteOut: {
-            /** Invite Code */
-            invite_code: string;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-        };
-        /** JoinIn */
-        JoinIn: {
-            /** Invite Code */
-            invite_code: string;
-        };
-        /** JoinOut */
-        JoinOut: {
-            family: components["schemas"]["FamilyDetailOut"];
-            /** Role */
-            role: string;
-        };
-        /** KakaoLoginIn */
-        KakaoLoginIn: {
-            /** Auth Code */
+        KakaoLoginRequest: {
             auth_code: string;
-            /** Redirect Uri */
             redirect_uri: string;
         };
-        /** KakaoLoginOut */
-        KakaoLoginOut: {
-            /** Access */
+        KakaoLoginResponse: {
             access: string;
-            /** Refresh */
             refresh: string;
-            user: components["schemas"]["UserOut"];
+            user: components["schemas"]["UserSummary"];
         };
-        /** MeOut */
-        MeOut: {
-            /** Id */
+        UserSummary: {
+            /** Format: uuid */
             id: string;
-            /** Name */
             name: string;
-            /** Profile Image */
-            profile_image: string | null;
-            /** Families */
-            families: components["schemas"]["FamilyOut"][];
+            profile_image: string;
         };
-        /** MemberOut */
-        MemberOut: {
-            /** User Id */
-            user_id: string;
-            /** Name */
+        FamilySummary: {
+            /** Format: uuid */
+            id: string;
             name: string;
-            /** Role */
             role: string;
-            /** Joined At */
-            joined_at: string;
+            /** Format: int32 */
+            member_count: number;
         };
-        /** PetCreateIn */
-        PetCreateIn: {
-            /** Breed */
-            breed?: string | null;
-            /** Dob */
-            dob?: string | null;
-            /** Weight */
-            weight?: number | null;
-            /**
-             * Neutered
-             * @default false
-             */
-            neutered: boolean;
-            /** Conditions */
-            conditions?: string[];
-        };
-        /** PetOut */
-        PetOut: {
-            /** Id */
+        MeResponse: {
+            /** Format: uuid */
             id: string;
-            /** Family Id */
-            family_id: string;
-            /** Species */
-            species: string;
-            /** Breed */
-            breed: string | null;
-            /** Dob */
-            dob: string | null;
-            /** Weight */
-            weight: number | null;
-            /** Neutered */
-            neutered: boolean;
-            /** Conditions */
-            conditions: string[];
-        };
-        /** PresignRequest */
-        PresignRequest: {
-            /**
-             * Modality
-             * @enum {string}
-             */
-            modality: "image" | "audio";
-            /** Content Type */
-            content_type: string;
-        };
-        /** PresignResponse */
-        PresignResponse: {
-            /** Key */
-            key: string;
-            /** Url */
-            url: string;
-            /** Ttl S */
-            ttl_s: number;
-        };
-        /** RawUploadOk */
-        RawUploadOk: {
-            /** Key */
-            key: string;
-            /** Bytes */
-            bytes: number;
-        };
-        /** RefreshIn */
-        RefreshIn: {
-            /** Refresh */
-            refresh: string;
-        };
-        /** TokenPair */
-        TokenPair: {
-            /** Access */
-            access: string;
-            /** Refresh */
-            refresh: string;
-        };
-        /** UserOut */
-        UserOut: {
-            /** Id */
-            id: string;
-            /** Name */
             name: string;
-            /** Profile Image */
-            profile_image: string | null;
+            profile_image: string;
+            families: components["schemas"]["FamilySummary"][];
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
+        HospitalNearbyResponse: {
+            /** Format: uuid */
+            id: string;
+            mgmt_no: string;
+            name: string;
+            road_addr: string;
+            tel: string;
+            /** Format: double */
+            lat: number;
+            /** Format: double */
+            lng: number;
+            /** Format: double */
+            distance_m: number;
+        };
+        MemberDetailResponse: {
+            /** Format: uuid */
+            user_id: string;
+            name: string;
+            role: string;
+            /** Format: date-time */
+            joined_at: string;
         };
     };
     responses: never;
@@ -722,680 +442,34 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    kakao_login_v1_auth_kakao_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["KakaoLoginIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KakaoLoginOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    refresh_token_v1_auth_refresh_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TokenPair"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    logout_v1_auth_logout_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    me_v1_me_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MeOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_families_v1_families_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FamilyListItemOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_family_v1_families_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["FamilyCreateIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreateFamilyOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    issue_family_invite_v1_families__family_id__invite_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                family_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["InviteIn"] | null;
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InviteOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    join_family_v1_families_join_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["JoinIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JoinOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_members_v1_families__family_id__members_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                family_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MemberOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_family_pets_route_v1_families__family_id__pets_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                family_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PetOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_family_pet_v1_families__family_id__pets_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                family_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PetCreateIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PetOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_pet_v1_pets__pet_id__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PetOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_diagnoses_v1_pets__pet_id__diagnoses_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_snapshots_v1_pets__pet_id__health_snapshots_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    sync_health_v1_pets__pet_id__health_sync_post: {
-        parameters: {
-            query?: {
-                force?: boolean;
-            };
-            header?: never;
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    hospitals_nearby_v1_hospitals_nearby_get: {
+    raw: {
         parameters: {
             query: {
-                lat: number;
-                lng: number;
-                radius_m?: number;
-                limit?: number;
-                /** @description W4-v2 triage 에서 사용, W3-v2 무시 */
-                specialty?: string | null;
+                key: string;
             };
-            header?: never;
+            header: {
+                "Content-Type": string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HospitalNearby"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["RawUploadResponse"];
                 };
             };
         };
     };
-    get_budget_v1_pets__pet_id__budget_get: {
+    presign: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                pet_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_savings_v1_finance_savings_get: {
-        parameters: {
-            query: {
-                monthly: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    mock_enroll_v1_finance_mock_enroll_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    list_campaigns_v1_donations_campaigns_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    track_and_redirect_v1_donations_redirect_post: {
-        parameters: {
-            query: {
-                campaign_id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    presign_upload_v1_uploads_presign_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
             path?: never;
             cookie?: never;
         };
@@ -1405,7 +479,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1414,122 +488,9 @@ export interface operations {
                     "application/json": components["schemas"]["PresignResponse"];
                 };
             };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
         };
     };
-    raw_upload_v1_uploads_raw_post: {
-        parameters: {
-            query: {
-                key: string;
-            };
-            header: {
-                "Content-Type": string;
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RawUploadOk"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    diagnose_image_route_v1_diagnose_image_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DiagnoseImageIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DiagnosisOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    diagnose_audio_route_v1_diagnose_audio_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DiagnoseAudioIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DiagnosisOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    healthz_healthz_get: {
+    list: {
         parameters: {
             query?: never;
             header?: never;
@@ -1538,13 +499,389 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["FamilySummary"][];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FamilyCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateFamilyResponse"];
+                };
+            };
+        };
+    };
+    listInFamily: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                family_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetResponse"][];
+                };
+            };
+        };
+    };
+    createInFamily: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                family_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PetCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetResponse"];
+                };
+            };
+        };
+    };
+    invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                family_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InviteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteResponse"];
+                };
+            };
+        };
+    };
+    join: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JoinRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JoinResponse"];
+                };
+            };
+        };
+    };
+    diagnoseImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnoseImageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisResponse"];
+                };
+            };
+        };
+    };
+    diagnoseAudio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnoseAudioRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisResponse"];
+                };
+            };
+        };
+    };
+    refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenPair"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    kakaoLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KakaoLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KakaoLoginResponse"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pet_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetResponse"];
+                };
+            };
+        };
+    };
+    listForPet: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                pet_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosisResponse"][];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    nearby: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+                radius_m?: number;
+                limit?: number;
+                specialty?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HospitalNearbyResponse"][];
+                };
+            };
+        };
+    };
+    members: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                family_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDetailResponse"][];
+                };
+            };
+        };
+    };
+    healthz: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
                 };
             };
         };

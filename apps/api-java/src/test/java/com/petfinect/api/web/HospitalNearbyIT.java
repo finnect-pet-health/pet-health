@@ -88,10 +88,10 @@ class HospitalNearbyIT {
 		// 부산은 5km radius 안에 없으므로 3개만
 		assertThat(body).hasSize(3);
 		// 거리 ASC
-		assertThat((String) body.get(0).get("mgmtNo")).isEqualTo("seoul-001");
-		double d0 = ((Number) body.get(0).get("distanceM")).doubleValue();
-		double d1 = ((Number) body.get(1).get("distanceM")).doubleValue();
-		double d2 = ((Number) body.get(2).get("distanceM")).doubleValue();
+		assertThat((String) body.get(0).get("mgmt_no")).isEqualTo("seoul-001");
+		double d0 = ((Number) body.get(0).get("distance_m")).doubleValue();
+		double d1 = ((Number) body.get(1).get("distance_m")).doubleValue();
+		double d2 = ((Number) body.get(2).get("distance_m")).doubleValue();
 		assertThat(d0).isLessThanOrEqualTo(d1);
 		assertThat(d1).isLessThanOrEqualTo(d2);
 
@@ -154,6 +154,6 @@ class HospitalNearbyIT {
 		assertThat(resp.getStatusCode().value()).isEqualTo(200);
 		List<Map<String, Object>> body = (List<Map<String, Object>>) resp.getBody();
 		assertThat(body).hasSize(1);
-		assertThat(body.get(0).get("mgmtNo")).isEqualTo("busan-004");
+		assertThat(body.get(0).get("mgmt_no")).isEqualTo("busan-004");
 	}
 }

@@ -22,6 +22,14 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: false
 
+  # Phase 9 — Python FastAPI 의 snake_case 직렬화 contract 와 1:1 매칭.
+  # Java field 는 camelCase 그대로 두되 Jackson 이 자동 변환:
+  #   serialize:   authCode (Java) → "auth_code" (JSON)
+  #   deserialize: "auth_code" (JSON) → authCode (Java)
+  # SNAKE_CASE 활성 시 camelCase JSON 키는 unknown 로 거부 (FAIL_ON_UNKNOWN_PROPERTIES 기본 true).
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
 server:
   port: 8001                       # Python 백엔드 8000 과 충돌 회피
 
@@ -53,6 +61,10 @@ management:
 springdoc:
   api-docs.path: /v3/api-docs
   swagger-ui.path: /swagger-ui.html
+  # 기본 미디어 타입 — springdoc 가 응답을 "*/*" 로 등록하지 않게 강제.
+  # openapi-typescript codegen 이 application/json 키만 인식해 정확한 타입을 생성한다.
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
 
 logging:
   level:

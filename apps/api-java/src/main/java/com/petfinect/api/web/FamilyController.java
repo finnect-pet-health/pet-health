@@ -80,9 +80,9 @@ public class FamilyController {
 			.toList();
 	}
 
-	@PostMapping("/{familyId}/invite")
+	@PostMapping("/{family_id}/invite")
 	public InviteResponse invite(
-		@PathVariable String familyId,
+		@PathVariable("family_id") String familyId,
 		@RequestBody(required = false) InviteRequest req,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {
@@ -102,9 +102,9 @@ public class FamilyController {
 		return new JoinResponse(new FamilyDetail(fam.getId(), fam.getName()), "member");
 	}
 
-	@GetMapping("/{familyId}/members")
+	@GetMapping("/{family_id}/members")
 	public List<MemberDetailResponse> members(
-		@PathVariable String familyId,
+		@PathVariable("family_id") String familyId,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {
 		UUID fid = parseUuidOr404(familyId);

@@ -80,9 +80,9 @@ public class DiagnoseController {
 		return serialize(evt);
 	}
 
-	@GetMapping("/v1/pets/{petId}/diagnoses")
+	@GetMapping("/v1/pets/{pet_id}/diagnoses")
 	public List<DiagnosisResponse> listForPet(
-		@PathVariable String petId,
+		@PathVariable("pet_id") String petId,
 		@RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {

@@ -47,9 +47,9 @@ public class PetController {
 		this.familyAccess = familyAccess;
 	}
 
-	@PostMapping("/v1/families/{familyId}/pets")
+	@PostMapping("/v1/families/{family_id}/pets")
 	public PetResponse createInFamily(
-		@PathVariable String familyId,
+		@PathVariable("family_id") String familyId,
 		@Valid @RequestBody PetCreateRequest req,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {
@@ -66,9 +66,9 @@ public class PetController {
 		return serialize(pet);
 	}
 
-	@GetMapping("/v1/families/{familyId}/pets")
+	@GetMapping("/v1/families/{family_id}/pets")
 	public List<PetResponse> listInFamily(
-		@PathVariable String familyId,
+		@PathVariable("family_id") String familyId,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {
 		UUID fid = parseUuidOr404(familyId, "family");
@@ -76,9 +76,9 @@ public class PetController {
 		return petService.listForFamily(fid).stream().map(this::serialize).toList();
 	}
 
-	@GetMapping("/v1/pets/{petId}")
+	@GetMapping("/v1/pets/{pet_id}")
 	public PetResponse get(
-		@PathVariable String petId,
+		@PathVariable("pet_id") String petId,
 		@AuthenticationPrincipal AuthenticatedUser principal
 	) {
 		UUID pid = parseUuidOr404(petId, "pet");

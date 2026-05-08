@@ -43,8 +43,9 @@ dependencies {
 	testCompileOnly("org.projectlombok:lombok:1.18.34")
 	testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
 
-	// OpenAPI export — shared-types codegen 의 source
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+	// OpenAPI export — shared-types codegen 의 source.
+	// 3.x 가 Spring Framework 7 / Spring Boot 4 호환. 2.x 는 Spring 6 까지.
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
 	// Tests
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
@@ -64,4 +65,25 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// Phase 9 — OpenAPI export.
+//
+// `./gradlew exportOpenApi` 는 OpenApiExportIT 만 골라 실행하고,
+// 시스템 프로퍼티 `petfinectExportOpenApi=true` 로 @EnabledIfSystemProperty 게이트를 푼다.
+// 결과: <repo>/docs/api/openapi-w3-v2-java.json
+//
+// `--rerun` 으로 입력 캐시 무시 (springdoc 출력은 코드 변경에만 의존하지 않으므로
+// JPA 메타/엔티티 어노테이션 추가 후에도 강제 재실행 필요).
+tasks.register<Test>("exportOpenApi") {
+	description = "Boot Spring (Testcontainers PostGIS) and export OpenAPI 3 to docs/api/openapi-w3-v2-java.json"
+	group = "documentation"
+	useJUnitPlatform()
+	testClassesDirs = sourceSets["test"].output.classesDirs
+	classpath = sourceSets["test"].runtimeClasspath
+	systemProperty("petfinectExportOpenApi", "true")
+	filter {
+		includeTestsMatching("com.petfinect.api.openapi.OpenApiExportIT")
+	}
+	outputs.upToDateWhen { false }
 }
