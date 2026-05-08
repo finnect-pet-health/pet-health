@@ -34,6 +34,11 @@ petfinect:
   ai-server:
     base-url: ${AI_SERVER_URL:http://localhost:8800}
     shared-secret: ${AI_SERVER_SHARED_SECRET:dev-shared-secret}
+    use-mock: ${AI_SERVER_USE_MOCK:true}        # true → MockAIServerClient (default). false → RealAIServerClient.
+    mtls:
+      ca-cert: ${AI_SERVER_CA_CERT:}             # 빈 값 → mTLS 비활성, plain HTTP/HTTPS 만.
+      client-cert: ${AI_SERVER_CLIENT_CERT:}     # gen_dev_certs.sh 산출 client.crt
+      client-key: ${AI_SERVER_CLIENT_KEY:}       # PKCS#8 PEM (openssl pkcs8 -topk8 -nocrypt 변환 필요)
   storage:
     bucket: ${S3_BUCKET:petfinect-dev}
     region: ${S3_REGION:ap-northeast-2}

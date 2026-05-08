@@ -44,8 +44,8 @@ curl http://localhost:8001/healthz   # → {"status":"ok"}
 | 3 | JWT + Kakao OAuth + Family RBAC | ⏳ |
 | 4 | Family/Pet routes | ⏳ |
 | 5 | Hospital nearby (Hibernate Spatial) | ⏳ |
-| 6 | Storage abstraction + uploads | ⏳ |
-| 7 | AI server client (HMAC + mTLS) | ⏳ |
+| 6 | Storage abstraction + uploads | ✅ |
+| 7 | AI server client (HMAC + mTLS) | ✅ |
 | 8 | Diagnose orchestration | ⏳ |
 | 9 | OpenAPI export → shared-types regen | ⏳ |
 | 10 | 회귀 + 모바일 동작 검증 | ⏳ |
