@@ -1,5 +1,6 @@
 package com.petfinect.api.domain;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -48,14 +49,18 @@ public class PetFood {
 	@Column(nullable = false)
 	private String name;
 
+	// V10: DOUBLE PRECISION → NUMERIC(10, 2). 컬럼명도 단위(per 100g) 명시.
 	@Column(name = "kcal_per_100g", nullable = false)
-	private Double kcalPer100g;
+	private BigDecimal kcalPer100g;
 
-	private Double protein;
+	@Column(name = "protein_per_100g")
+	private BigDecimal proteinPer100g;
 
-	private Double carbs;
+	@Column(name = "carbs_per_100g")
+	private BigDecimal carbsPer100g;
 
-	private Double fat;
+	@Column(name = "fat_per_100g")
+	private BigDecimal fatPer100g;
 
 	@Enumerated(EnumType.STRING)
 	@JdbcTypeCode(SqlTypes.NAMED_ENUM)

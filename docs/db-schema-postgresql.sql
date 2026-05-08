@@ -1,6 +1,6 @@
 -- =============================================================
 -- PetFinect — PostgreSQL 16 + PostGIS 3.4 DB schema
--- Source: apps/api-java/src/main/resources/db/migration/V1~V9.sql
+-- Source: apps/api-java/src/main/resources/db/migration/V1~V10.sql
 --
 -- 학습 포인트
 --   1) PostgreSQL ENUM 타입 (CREATE TYPE ... AS ENUM)
@@ -29,7 +29,8 @@ CREATE TYPE member_role          AS ENUM ('owner', 'member');
 CREATE TYPE pet_species          AS ENUM ('dog', 'cat', 'other');
 
 CREATE TYPE meal_source          AS ENUM ('fatsecret', 'custom', 'seed');
-CREATE TYPE meal_food_kind       AS ENUM ('사료', '간식', '일반식', '처방식');
+-- V10: 한글값 → 영문 키 (라벨 i18n 은 클라이언트가 매핑).
+CREATE TYPE meal_food_kind       AS ENUM ('kibble', 'treat', 'regular', 'prescription');
 CREATE TYPE calendar_task_kind   AS ENUM ('meal', 'walk', 'medicine', 'vet', 'custom');
 CREATE TYPE pet_food_source      AS ENUM ('seed', 'fatsecret', 'user');
 CREATE TYPE notification_channel AS ENUM ('expo', 'log');
@@ -131,11 +132,11 @@ CREATE TABLE meal (
     source      meal_source     NOT NULL,
     food_id     VARCHAR,
     food_name   VARCHAR         NOT NULL,
-    qty_g       DOUBLE PRECISION NOT NULL,
-    kcal        DOUBLE PRECISION,
-    protein_g   DOUBLE PRECISION,
-    carbs_g     DOUBLE PRECISION,
-    fat_g       DOUBLE PRECISION,
+    qty_g       NUMERIC(10, 2) NOT NULL,                       -- V10
+    kcal        NUMERIC(10, 2),
+    protein_g   NUMERIC(10, 2),
+    carbs_g     NUMERIC(10, 2),
+    fat_g       NUMERIC(10, 2),
     note        VARCHAR,
     food_kind   meal_food_kind,
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT now()
@@ -186,10 +187,11 @@ CREATE TABLE pet_food (
     id              UUID PRIMARY KEY,
     brand           VARCHAR             NOT NULL,
     name            VARCHAR             NOT NULL,
-    kcal_per_100g   DOUBLE PRECISION    NOT NULL,
-    protein         DOUBLE PRECISION,
-    carbs           DOUBLE PRECISION,
-    fat             DOUBLE PRECISION,
+    -- V10: DOUBLE PRECISION → NUMERIC(10, 2), 단위(per 100g) 컬럼명 통일.
+    kcal_per_100g       NUMERIC(10, 2) NOT NULL,
+    protein_per_100g    NUMERIC(10, 2),
+    carbs_per_100g      NUMERIC(10, 2),
+    fat_per_100g        NUMERIC(10, 2),
     source          pet_food_source     NOT NULL DEFAULT 'seed',
     created_at      TIMESTAMPTZ         NOT NULL DEFAULT now(),
     CONSTRAINT uq_pet_food_brand_name UNIQUE (brand, name)

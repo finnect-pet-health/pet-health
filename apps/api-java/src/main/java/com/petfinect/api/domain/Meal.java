@@ -1,5 +1,6 @@
 package com.petfinect.api.domain;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -58,19 +59,20 @@ public class Meal {
 	@Column(name = "food_name", nullable = false)
 	private String foodName;
 
+	// V10: DOUBLE PRECISION → NUMERIC(10, 2) — 영양정보 정밀도 (BigDecimal).
 	@Column(name = "qty_g", nullable = false)
-	private Double qtyG;
+	private BigDecimal qtyG;
 
-	private Double kcal;
+	private BigDecimal kcal;
 
 	@Column(name = "protein_g")
-	private Double proteinG;
+	private BigDecimal proteinG;
 
 	@Column(name = "carbs_g")
-	private Double carbsG;
+	private BigDecimal carbsG;
 
 	@Column(name = "fat_g")
-	private Double fatG;
+	private BigDecimal fatG;
 
 	private String note;
 
