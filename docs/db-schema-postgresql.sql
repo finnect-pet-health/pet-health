@@ -1,6 +1,6 @@
 -- =============================================================
 -- PetFinect — PostgreSQL 16 + PostGIS 3.4 DB schema
--- Source: apps/api-java/src/main/resources/db/migration/V1~V5.sql
+-- Source: apps/api-java/src/main/resources/db/migration/V1~V6.sql
 --
 -- 학습 포인트
 --   1) PostgreSQL ENUM 타입 (CREATE TYPE ... AS ENUM)
@@ -54,6 +54,7 @@ CREATE TABLE "user" (
     profile_image   VARCHAR,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V5: DEFAULT 보강
     last_login_at   TIMESTAMPTZ,
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V6: + BEFORE UPDATE trigger
     CONSTRAINT uq_user_kakao_id UNIQUE (kakao_id)
 );
 CREATE INDEX ix_user_kakao_id ON "user" (kakao_id);
@@ -68,6 +69,7 @@ CREATE TABLE family (
     invite_code         VARCHAR(16),
     invite_expires_at   TIMESTAMPTZ,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V5: DEFAULT 보강
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V6: + BEFORE UPDATE trigger
     CONSTRAINT uq_family_invite_code UNIQUE (invite_code)
 );
 
@@ -96,7 +98,8 @@ CREATE TABLE pet (
     weight      DOUBLE PRECISION,
     neutered    BOOLEAN         NOT NULL DEFAULT FALSE,
     conditions  JSONB           NOT NULL DEFAULT '[]',
-    created_at  TIMESTAMPTZ     NOT NULL DEFAULT now()         -- V5: 일관성
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT now(),        -- V5: 일관성
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT now()         -- V6: + BEFORE UPDATE trigger
 );
 
 
@@ -247,10 +250,43 @@ CREATE TABLE diagnosis_event (
     top_results         JSONB               NOT NULL DEFAULT '[]',
     action              diagnosis_action    NOT NULL,
     confidence_top1     DOUBLE PRECISION    NOT NULL,
-    created_at          TIMESTAMPTZ         NOT NULL DEFAULT now()
+    created_at          TIMESTAMPTZ         NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ         NOT NULL DEFAULT now()  -- V6
 );
 CREATE INDEX ix_diagnosis_event_pet_created
     ON diagnosis_event (pet_id, created_at DESC);
+
+
+-- =============================================================
+-- 7. V6 — updated_at trigger + JSONB GIN 인덱스
+-- =============================================================
+-- 학습 포인트
+--   - PL/pgSQL trigger function: NEW = 변경 후 행. RETURN NEW 로 commit.
+--   - BEFORE UPDATE 시점 → INSERT/DELETE 영향 없음.
+--   - GIN access method = 역색인. JSONB 의 @>, ? , ?| 연산자 가속.
+
+CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 5 가변 테이블 트리거
+CREATE TRIGGER trg_user_updated_at BEFORE UPDATE ON "user"
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_family_updated_at BEFORE UPDATE ON family
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_pet_updated_at BEFORE UPDATE ON pet
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_diagnosis_event_updated_at BEFORE UPDATE ON diagnosis_event
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_hospital_updated_at BEFORE UPDATE ON hospital
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- JSONB GIN
+CREATE INDEX ix_pet_conditions_gin            ON pet USING GIN (conditions);
+CREATE INDEX ix_diagnosis_event_top_results_gin ON diagnosis_event USING GIN (top_results);
 
 
 -- =============================================================

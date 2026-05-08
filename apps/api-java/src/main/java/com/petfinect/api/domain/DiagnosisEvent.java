@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -82,4 +83,9 @@ public class DiagnosisEvent {
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt;
+
+	// V6: INSERT 시 DB DEFAULT now() (insertable=false), UPDATE 시 trigger.
+	@UpdateTimestamp
+	@Column(name = "updated_at", nullable = false, insertable = false)
+	private OffsetDateTime updatedAt;
 }
