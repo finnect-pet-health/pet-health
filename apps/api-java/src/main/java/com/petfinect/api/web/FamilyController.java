@@ -89,7 +89,9 @@ public class FamilyController {
 		UUID fid = parseUuidOr404(familyId);
 		familyAccess.requireOwner(fid, principal.claims());
 		int ttlHours = (req != null && req.ttlHours() != null) ? req.ttlHours() : 72;
-		FamilyService.InviteResult result = familyService.issueInvite(fid, ttlHours);
+		FamilyService.InviteResult result = familyService.issueInvite(
+			fid, principal.claims().sub(), ttlHours
+		);
 		return new InviteResponse(result.inviteCode(), result.expiresAt());
 	}
 

@@ -15,10 +15,7 @@ class Family(Base):
     owner_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("user.id", ondelete="RESTRICT"), nullable=False
     )
-    invite_code: Mapped[str | None] = mapped_column(String(16), unique=True, nullable=True)
-    invite_expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    # V9: invite_code/invite_expires_at 은 family_invite 테이블로 이전.
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=datetime.utcnow
     )

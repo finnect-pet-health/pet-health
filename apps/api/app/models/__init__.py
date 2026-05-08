@@ -2,6 +2,7 @@ from app.models.calendar_task import CalendarTask
 from app.models.device import Device
 from app.models.diagnosis_event import DiagnosisEvent
 from app.models.family import Family
+from app.models.family_invite import FamilyInvite
 from app.models.family_member import FamilyMember
 from app.models.hospital import Hospital
 from app.models.meal import Meal
@@ -14,6 +15,7 @@ from app.models.vet_visit import VetVisit
 __all__ = [
     "User",
     "Family",
+    "FamilyInvite",
     "FamilyMember",
     "Pet",
     "Meal",

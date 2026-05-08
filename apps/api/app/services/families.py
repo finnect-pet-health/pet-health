@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1._errors import http_error
-from app.models import Family, FamilyMember, User
+from app.models import Family, FamilyInvite, FamilyMember, User
 
 
 def generate_invite_code() -> str:
@@ -71,21 +71,27 @@ async def list_my_families(session: AsyncSession, user: User) -> list[dict]:
 
 
 async def issue_invite(
-    session: AsyncSession, family: Family, ttl_hours: int
+    session: AsyncSession, family: Family, ttl_hours: int, issuer: User | None = None
 ) -> tuple[str, datetime]:
-    """Generate a fresh invite code, persist it, return (code, expires_at).
+    """Generate a fresh invite code, persist new ``family_invite`` row, return (code, expires_at).
 
+    V9: family_invite 테이블에 INSERT (1:N). 같은 family 가 여러 invite 동시 발급 가능.
     Retries once on rare uniqueness collisions (D5).
     """
     expires_at = datetime.now(UTC) + timedelta(hours=ttl_hours)
+    issuer_id = issuer.id if issuer is not None else family.owner_id
     for _ in range(2):
         code = generate_invite_code()
-        family.invite_code = code
-        family.invite_expires_at = expires_at
-        session.add(family)
+        invite = FamilyInvite(
+            id=uuid.uuid4(),
+            family_id=family.id,
+            code=code,
+            expires_at=expires_at,
+            created_by=issuer_id,
+        )
+        session.add(invite)
         try:
             await session.commit()
-            await session.refresh(family)
             return code, expires_at
         except IntegrityError:
             await session.rollback()
@@ -98,17 +104,24 @@ async def join_by_code(
 ) -> Family:
     """Resolve invite_code → join family as ``member``.
 
+    V9: family_invite.code 로 lookup. expires_at 검증.
     Raises 404 NOT_FOUND, 410 INVITE_EXPIRED, 409 ALREADY_MEMBER.
     """
-    fam = (
-        await session.execute(select(Family).where(Family.invite_code == invite_code))
+    invite = (
+        await session.execute(
+            select(FamilyInvite).where(FamilyInvite.code == invite_code)
+        )
     ).scalar_one_or_none()
-    if fam is None:
+    if invite is None:
         raise http_error(404, "NOT_FOUND", "invite code not found")
 
     now = datetime.now(UTC)
-    if fam.invite_expires_at is None or fam.invite_expires_at < now:
+    if invite.expires_at is None or invite.expires_at < now:
         raise http_error(410, "INVITE_EXPIRED", "invite code expired")
+
+    fam = await session.get(Family, invite.family_id)
+    if fam is None:
+        raise http_error(404, "NOT_FOUND", "family not found")
 
     existing = (
         await session.execute(

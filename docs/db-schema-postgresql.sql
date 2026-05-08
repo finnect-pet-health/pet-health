@@ -1,6 +1,6 @@
 -- =============================================================
 -- PetFinect — PostgreSQL 16 + PostGIS 3.4 DB schema
--- Source: apps/api-java/src/main/resources/db/migration/V1~V7.sql
+-- Source: apps/api-java/src/main/resources/db/migration/V1~V9.sql
 --
 -- 학습 포인트
 --   1) PostgreSQL ENUM 타입 (CREATE TYPE ... AS ENUM)
@@ -62,16 +62,29 @@ CREATE INDEX ix_user_kakao_id ON "user" (kakao_id);
 -- 3.2 가족 (1 owner = 1 가족 그룹)
 --   - owner_id ON DELETE RESTRICT = 가족이 있는 동안 owner 삭제 불가.
 --   - invite_code 는 16자 이내 + UNIQUE.
+-- V9: invite_code/invite_expires_at 은 별도 family_invite 테이블 (1:N) 로 추출.
 CREATE TABLE family (
     id                  UUID PRIMARY KEY,
     name                VARCHAR     NOT NULL,
     owner_id            UUID        NOT NULL REFERENCES "user" (id) ON DELETE RESTRICT,
-    invite_code         VARCHAR(16),
-    invite_expires_at   TIMESTAMPTZ,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V5: DEFAULT 보강
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),  -- V6: + BEFORE UPDATE trigger
-    CONSTRAINT uq_family_invite_code UNIQUE (invite_code)
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()   -- V6: + BEFORE UPDATE trigger
 );
+
+-- V9: family invite 1:N — 발급/사용 감사 가능.
+CREATE TABLE family_invite (
+    id          UUID PRIMARY KEY,
+    family_id   UUID         NOT NULL REFERENCES family (id) ON DELETE CASCADE,
+    code        VARCHAR(16)  NOT NULL,
+    expires_at  TIMESTAMPTZ  NOT NULL,
+    created_by  UUID                  REFERENCES "user" (id) ON DELETE SET NULL,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    used_at     TIMESTAMPTZ,
+    used_by     UUID                  REFERENCES "user" (id) ON DELETE SET NULL,
+    CONSTRAINT uq_family_invite_code UNIQUE (code)
+);
+CREATE INDEX ix_family_invite_family_created
+    ON family_invite (family_id, created_at DESC);
 
 -- 3.3 가족 멤버 (M:N)
 --   - 복합 PK: (family_id, user_id) — 같은 사람이 같은 가족에 두 번 못 들어감.

@@ -175,10 +175,12 @@ async def test_join_already_member_409(app_client):
 
 @pytest.mark.asyncio
 async def test_join_expired_invite_410(app_client, db_session):
-    """Manually backdate invite_expires_at to test 410."""
+    """V9: family_invite.expires_at 을 backdate 해 410 검증."""
     from datetime import datetime, timedelta
 
-    from app.models import Family
+    from sqlalchemy import select
+
+    from app.models import FamilyInvite
 
     owner = await _login(app_client, "mock-user-1")
     owner_h = _bearer(owner["access"])
@@ -191,11 +193,13 @@ async def test_join_expired_invite_410(app_client, db_session):
     )
     code = invite.json()["invite_code"]
 
-    # Backdate via the same shared session
-    import uuid
-
-    db_fam = await db_session.get(Family, uuid.UUID(family_id))
-    db_fam.invite_expires_at = datetime.now(UTC) - timedelta(minutes=1)
+    # Backdate the FamilyInvite row directly.
+    invite_row = (
+        await db_session.execute(
+            select(FamilyInvite).where(FamilyInvite.code == code)
+        )
+    ).scalar_one()
+    invite_row.expires_at = datetime.now(UTC) - timedelta(minutes=1)
     await db_session.commit()
 
     member = await _login(app_client, "mock-user-2")

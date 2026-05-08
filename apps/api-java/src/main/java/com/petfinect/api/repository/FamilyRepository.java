@@ -1,6 +1,5 @@
 package com.petfinect.api.repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +9,5 @@ import com.petfinect.api.domain.Family;
 
 @Repository
 public interface FamilyRepository extends JpaRepository<Family, UUID> {
-
-	Optional<Family> findByInviteCode(String inviteCode);
+	// V9: findByInviteCode 제거 — invite 는 FamilyInviteRepository.findByCode 로.
 }

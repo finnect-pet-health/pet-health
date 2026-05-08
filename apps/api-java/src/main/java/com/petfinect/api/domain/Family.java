@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,10 +32,7 @@ import lombok.Setter;
  * </ul>
  */
 @Entity
-@Table(
-	name = "family",
-	uniqueConstraints = @UniqueConstraint(name = "uq_family_invite_code", columnNames = "invite_code")
-)
+@Table(name = "family")
 @Getter
 @Setter
 @Builder
@@ -57,12 +53,7 @@ public class Family {
 	@JoinColumn(name = "owner_id", nullable = false)
 	private User owner;
 
-	@Column(name = "invite_code", length = 16)
-	private String inviteCode;
-
-	@Column(name = "invite_expires_at")
-	private OffsetDateTime inviteExpiresAt;
-
+	// V9: invite_code/invite_expires_at 은 family_invite 테이블로 이전.
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt;
