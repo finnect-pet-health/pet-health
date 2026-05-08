@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 import sqlalchemy as sa
 from geoalchemy2 import Geometry
@@ -19,7 +19,8 @@ class Hospital(Base):
     zip: Mapped[str] = mapped_column(sa.String, nullable=False, server_default="")
     tel: Mapped[str] = mapped_column(sa.String, nullable=False, server_default="")
     status: Mapped[str] = mapped_column(sa.String, nullable=False, server_default="")
-    licensed_at: Mapped[str | None] = mapped_column(sa.String, nullable=True)
+    # V7: VARCHAR(YYYYMMDD) → DATE. ETL 측 _parse_ymd 가 파싱.
+    licensed_at: Mapped[date | None] = mapped_column(sa.Date, nullable=True)
     authority_code: Mapped[str] = mapped_column(sa.String, nullable=False, server_default="")
     location = mapped_column(
         Geometry(geometry_type="POINT", srid=4326, spatial_index=True),

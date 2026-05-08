@@ -1,5 +1,6 @@
 package com.petfinect.api.domain;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -75,8 +76,9 @@ public class Hospital {
 	@Builder.Default
 	private String status = "";
 
+	// V7: VARCHAR(YYYYMMDD) → DATE. ETL 가 파싱 책임.
 	@Column(name = "licensed_at")
-	private String licensedAt;
+	private LocalDate licensedAt;
 
 	@Column(name = "authority_code", nullable = false)
 	@Builder.Default

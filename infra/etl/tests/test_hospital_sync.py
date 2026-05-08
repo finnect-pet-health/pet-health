@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import date
 
 from infra.etl.hospital_sync import (
+    _parse_ymd,
     enrich_with_geocoding,
     is_active,
     load_static_seed,
@@ -51,6 +53,7 @@ def test_transform_row_with_coordinates() -> None:
     assert out["lat"] is not None and out["lng"] is not None
     assert 37.0 < out["lat"] < 38.0
     assert 126.5 < out["lng"] < 127.5
+    assert out["licensed_at"] == date(2020, 1, 1)  # V7: YYYYMMDD → date
 
 
 def test_transform_row_missing_coordinates_returns_none() -> None:
@@ -126,6 +129,18 @@ def test_enrich_with_geocoding_fills_only_missing_coords() -> None:
     assert "이미좌표있는병원" not in geocoder.calls
     # 주소 없는 row 는 None 유지.
     assert rows[2]["lat"] is None
+
+
+def test_parse_ymd_handles_yyyymmdd_iso_and_invalid() -> None:
+    """V7 — _parse_ymd 가 YYYYMMDD/ISO/빈/잘못된 입력을 모두 안전하게 처리."""
+    assert _parse_ymd("20200101") == date(2020, 1, 1)
+    assert _parse_ymd("2020-01-01") == date(2020, 1, 1)
+    assert _parse_ymd(None) is None
+    assert _parse_ymd("") is None
+    assert _parse_ymd("   ") is None
+    assert _parse_ymd("20201301") is None  # 13월 — invalid month
+    assert _parse_ymd("not-a-date") is None
+    assert _parse_ymd("12345") is None  # too short
 
 
 def test_enrich_with_geocoding_handles_geocoder_none_response() -> None:

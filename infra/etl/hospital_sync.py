@@ -44,6 +44,7 @@ import asyncio
 import json
 import os
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -77,6 +78,28 @@ def tm_to_wgs84(tm_x: float, tm_y: float) -> tuple[float, float]:
     transformer = _get_transformer()
     lng, lat = transformer.transform(tm_x, tm_y)
     return lng, lat
+
+
+def _parse_ymd(s: str | None) -> date | None:
+    """LCPMT_YMD ('20200101') → date(2020, 1, 1). 빈/None/잘못된 형식 → None.
+
+    공공데이터 인허가일자(YYYYMMDD) 또는 ISO('YYYY-MM-DD') 모두 허용.
+    V7 — DB column 이 DATE 라 ETL 단계에서 파싱 책임.
+    """
+    if not s:
+        return None
+    s = s.strip()
+    if not s:
+        return None
+    if len(s) == 8 and s.isdigit():
+        try:
+            return date(int(s[:4]), int(s[4:6]), int(s[6:8]))
+        except ValueError:
+            return None
+    try:
+        return date.fromisoformat(s)
+    except ValueError:
+        return None
 
 
 async def fetch_page(
@@ -121,7 +144,7 @@ def transform_row(row: dict[str, Any]) -> dict[str, Any]:
         "zip": row.get("ROAD_NM_ZIP") or "",
         "tel": row.get("TELNO") or "",
         "status": row.get("SALS_STTS_NM") or "",
-        "licensed_at": row.get("LCPMT_YMD") or None,
+        "licensed_at": _parse_ymd(row.get("LCPMT_YMD")),
         "authority_code": row.get("OPN_ATMY_GRP_CD") or "",
         "tm_x": tm_x,
         "tm_y": tm_y,
@@ -173,7 +196,7 @@ def load_static_seed(path: Path | None = None) -> list[dict[str, Any]]:
                 "zip": r.get("zip", ""),
                 "tel": r.get("tel", ""),
                 "status": r.get("status", "영업/정상"),
-                "licensed_at": r.get("licensed_at"),
+                "licensed_at": _parse_ymd(r.get("licensed_at")),
                 "authority_code": r.get("authority_code", ""),
                 "tm_x": None,
                 "tm_y": None,

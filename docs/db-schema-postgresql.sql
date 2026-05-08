@@ -1,6 +1,6 @@
 -- =============================================================
 -- PetFinect — PostgreSQL 16 + PostGIS 3.4 DB schema
--- Source: apps/api-java/src/main/resources/db/migration/V1~V6.sql
+-- Source: apps/api-java/src/main/resources/db/migration/V1~V7.sql
 --
 -- 학습 포인트
 --   1) PostgreSQL ENUM 타입 (CREATE TYPE ... AS ENUM)
@@ -226,7 +226,7 @@ CREATE TABLE hospital (
     zip             VARCHAR             NOT NULL DEFAULT '',
     tel             VARCHAR             NOT NULL DEFAULT '',
     status          VARCHAR             NOT NULL DEFAULT '',
-    licensed_at     VARCHAR,
+    licensed_at     DATE,                                                 -- V7: VARCHAR → DATE
     authority_code  VARCHAR             NOT NULL DEFAULT '',
     location        geometry(Point, 4326),
     updated_at      TIMESTAMPTZ         NOT NULL DEFAULT now(),
